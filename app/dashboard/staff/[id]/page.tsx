@@ -1,26 +1,53 @@
 'use client';
 
-import { use } from 'react'; // React 19 hook for unwrapping params
+import { use, useState, useEffect } from 'react'; // React 19 hook for unwrapping params
 import StaffForm from '@/components/StaffForm';
 import { Staff } from '@/app/types';
+import { staffApi } from '@/lib/api';
+import { Loader2 } from 'lucide-react';
 
 export default function EditStaffPage({ params }: { params: Promise<{ id: string }> }) {
     const resolvedParams = use(params);
     const id = resolvedParams.id;
-    // Mock data lookup
-    const mockStaff: Staff[] = [
-        { _id: '1', name: 'John Doe', email: 'john@example.com', role: 'Manager', department: 'Sales', status: 'active', createdAt: '2023-01-01' },
-        { _id: '2', name: 'Jane Smith', email: 'jane@example.com', role: 'Developer', department: 'Engineering', status: 'inactive', createdAt: '2023-02-15' },
-        { _id: '3', name: 'Robert Johnson', email: 'robert@example.com', role: 'Designer', department: 'Marketing', status: 'active', createdAt: '2023-03-10' },
-        { _id: '4', name: 'Emily Davis', email: 'emily@example.com', role: 'HR Specialist', department: 'Human Resources', status: 'active', createdAt: '2023-04-05' },
-    ];
 
-    const staff = mockStaff.find(s => s._id === id) || null;
+    const [staff, setStaff] = useState<Staff | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
-    if (!staff) {
+    useEffect(() => {
+        const fetchStaff = async () => {
+            try {
+                const data = await staffApi.getById(id);
+                setStaff(data);
+            } catch (err) {
+                console.error('Failed to fetch staff detail:', err);
+                setError('Staff member not found or error fetching details.');
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchStaff();
+    }, [id]);
+
+    if (isLoading) {
         return (
-            <div className="p-4 text-center text-red-600">
-                Staff member not found
+            <div className="flex justify-center py-10">
+                <Loader2 className="h-8 w-8 animate-spin text-orange-600" />
+            </div>
+        );
+    }
+
+    if (error || !staff) {
+        return (
+            <div className="rounded-md bg-red-50 p-4 dark:bg-red-900/20">
+                <div className="flex">
+                    <div className="ml-3">
+                        <h3 className="text-sm font-medium text-red-800 dark:text-red-200">
+                            {error || 'Staff member not found'}
+                        </h3>
+                    </div>
+                </div>
             </div>
         );
     }

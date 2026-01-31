@@ -32,7 +32,7 @@ export default function DashboardPage() {
     return (
         <div className="space-y-8">
             {/* Welcome Section */}
-            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-500 p-8 shadow-lg dark:from-orange-900 dark:via-red-900 dark:to-amber-900">
+            <div className="relative overflow-hidden rounded-2xl bg-orange-500 p-8 shadow-lg dark:from-orange-900 dark:via-red-900 dark:to-amber-900">
                 <div className="relative z-10">
                     <h2 className="text-3xl font-bold text-white">Welcome back, Admin!</h2>
                     <p className="mt-2 text-orange-100">Here's what's happening with your team today.</p>
@@ -56,7 +56,6 @@ export default function DashboardPage() {
                                 </div>
                             </div>
                             <div className="mt-4 flex items-center text-sm">
-                                <TrendingUp className="mr-1.5 h-4 w-4 text-green-500" />
                                 <span className="text-gray-600 dark:text-gray-400">{item.change}</span>
                             </div>
                         </div>

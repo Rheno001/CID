@@ -35,7 +35,7 @@ export default function DashboardLayout({
         if (!token) {
             console.log("No token, redirecting to login");
             router.push('/login');
-        } else if (userData) {
+        } else if (userData && userData !== 'undefined') {
             try {
                 const parsedUser = JSON.parse(userData);
                 console.log("User loaded:", parsedUser);
@@ -51,6 +51,7 @@ export default function DashboardLayout({
     const navigation = [
         { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
         { name: 'Staff Management', href: '/dashboard/staff', icon: Users },
+        { name: 'Profile', href: '/dashboard/profile', icon: UserIcon },
     ];
 
     const handleLogout = () => {
@@ -77,7 +78,7 @@ export default function DashboardLayout({
                 )}
             >
                 <div className="flex h-16 shrink-0 items-center justify-between px-6 border-b border-gray-200 dark:border-zinc-800 bg-white/50 backdrop-blur-md dark:bg-zinc-900/50">
-                    <span className="text-xl font-bold tracking-tight bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent dark:from-orange-400 dark:to-amber-400">
+                    <span className="text-xl font-bold tracking-tight bg-orange-500 bg-clip-text text-transparent">
                         AdminPanel
                     </span>
                     <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-gray-500">
@@ -148,7 +149,7 @@ export default function DashboardLayout({
                         <div className="flex items-center gap-x-4 lg:gap-x-6">
                             <ThemeToggle />
                             <div className="border-l border-gray-200 pl-4 md:pl-6 dark:border-gray-700">
-                                <span className="flex items-center gap-2">
+                                <Link href="/dashboard/profile" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
                                     <span className="sr-only">Your profile</span>
                                     <div className="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold">
                                         {user?.name?.[0] || <UserIcon className="h-5 w-5" />}
@@ -158,7 +159,7 @@ export default function DashboardLayout({
                                             {user?.name || 'Admin'}
                                         </span>
                                     </span>
-                                </span>
+                                </Link>
                             </div>
                         </div>
                     </div>
