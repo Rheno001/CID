@@ -13,6 +13,7 @@ import {
     User as UserIcon,
 } from 'lucide-react';
 import { User } from '@/app/types';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 export default function DashboardLayout({
     children,
@@ -76,7 +77,7 @@ export default function DashboardLayout({
                 )}
             >
                 <div className="flex h-16 shrink-0 items-center justify-between px-6 border-b border-gray-200 dark:border-zinc-800 bg-white/50 backdrop-blur-md dark:bg-zinc-900/50">
-                    <span className="text-xl font-bold tracking-tight bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent dark:from-indigo-400 dark:to-violet-400">
+                    <span className="text-xl font-bold tracking-tight bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent dark:from-orange-400 dark:to-amber-400">
                         AdminPanel
                     </span>
                     <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-gray-500">
@@ -97,15 +98,15 @@ export default function DashboardLayout({
                                                     href={item.href}
                                                     className={cn(
                                                         isActive
-                                                            ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400 shadow-sm ring-1 ring-indigo-500/20'
-                                                            : 'text-gray-700 hover:text-indigo-600 hover:bg-gray-50 dark:text-gray-400 dark:hover:text-white dark:hover:bg-zinc-800/50',
+                                                            ? 'bg-orange-50 text-orange-600 dark:bg-orange-500/10 dark:text-orange-400 shadow-sm ring-1 ring-orange-500/20'
+                                                            : 'text-gray-700 hover:text-orange-600 hover:bg-gray-50 dark:text-gray-400 dark:hover:text-white dark:hover:bg-zinc-800/50',
                                                         'group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold transition-all duration-200'
                                                     )}
                                                     onClick={() => setSidebarOpen(false)}
                                                 >
                                                     <item.icon
                                                         className={cn(
-                                                            isActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-400 group-hover:text-indigo-600 dark:text-gray-500 dark:group-hover:text-white',
+                                                            isActive ? 'text-orange-600 dark:text-orange-400' : 'text-gray-400 group-hover:text-orange-600 dark:text-gray-500 dark:group-hover:text-white',
                                                             'h-6 w-6 shrink-0 transition-colors'
                                                         )}
                                                         aria-hidden="true"
@@ -145,6 +146,7 @@ export default function DashboardLayout({
 
                     <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6 justify-end items-center">
                         <div className="flex items-center gap-x-4 lg:gap-x-6">
+                            <ThemeToggle />
                             <div className="border-l border-gray-200 pl-4 md:pl-6 dark:border-gray-700">
                                 <span className="flex items-center gap-2">
                                     <span className="sr-only">Your profile</span>

@@ -158,24 +158,21 @@ export default function StaffForm({ initialData, isEdit = false }: StaffFormProp
                 </div>
             )}
 
-            <div className="flex items-center justify-end gap-x-6">
+            <div className="flex justify-end gap-x-3">
                 <button
                     type="button"
                     onClick={() => router.back()}
-                    className="text-sm font-semibold leading-6 text-gray-900 dark:text-gray-300"
+                    className="rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-zinc-800 dark:text-gray-200 dark:ring-zinc-700 dark:hover:bg-zinc-700"
                 >
                     Cancel
                 </button>
                 <button
                     type="submit"
                     disabled={loading}
-                    className={cn(
-                        "rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600",
-                        loading && "opacity-50 cursor-not-allowed"
-                    )}
+                    className="rounded-md bg-orange-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-orange-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600 disabled:opacity-50"
                 >
                     {loading ? (
-                        <Loader2 className="h-5 w-5 animate-spin" />
+                        <Loader2 className="h-8 w-8 animate-spin text-orange-600" />
                     ) : (
                         isEdit ? 'Update Staff' : 'Create Staff'
                     )}

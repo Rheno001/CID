@@ -29,7 +29,7 @@ export default function StaffPage() {
                 </div>
                 <Link
                     href="/dashboard/staff/create"
-                    className="inline-flex items-center gap-x-2 rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                    className="inline-flex items-center gap-x-2 rounded-md bg-orange-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-orange-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600"
                 >
                     <Plus className="-ml-0.5 h-5 w-5" aria-hidden="true" />
                     Add Staff
@@ -61,10 +61,10 @@ export default function StaffPage() {
                                             <div className="flex overflow-hidden rounded-md border border-gray-300 dark:border-zinc-700">
                                                 <Link
                                                     href={`/dashboard/staff/${person._id}`}
-                                                    className="bg-white p-2 text-gray-400 hover:text-gray-500 dark:bg-zinc-800 dark:text-gray-400 dark:hover:text-gray-300 border-r border-gray-300 dark:border-zinc-700"
+                                                    className="rounded bg-white px-2 py-1 text-xs font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-zinc-700 dark:text-gray-200 dark:ring-zinc-600 dark:hover:bg-zinc-600"
                                                 >
+                                                    <Pencil className="h-4 w-4 text-orange-600 dark:text-orange-400" />
                                                     <span className="sr-only">Edit</span>
-                                                    <Pencil className="h-5 w-5" />
                                                 </Link>
                                                 <button
                                                     onClick={() => handleDelete(person._id)}
