@@ -11,6 +11,7 @@ import {
     Menu,
     X,
     User as UserIcon,
+    Ticket,
 } from 'lucide-react';
 import { User } from '@/app/types';
 import { ThemeToggle } from '@/components/ThemeToggle';
@@ -51,6 +52,7 @@ export default function DashboardLayout({
     const navigation = [
         { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
         { name: 'Staff Management', href: '/dashboard/staff', icon: Users },
+        { name: 'Tickets', href: '/dashboard/tickets', icon: Ticket },
         { name: 'Profile', href: '/dashboard/profile', icon: UserIcon },
     ];
 
@@ -61,116 +63,91 @@ export default function DashboardLayout({
     };
 
     return (
-        <div className="min-h-screen bg-gray-100 dark:bg-zinc-950">
-            {/* Mobile sidebar backdrop */}
-            {sidebarOpen && (
-                <div
-                    className="fixed inset-0 z-40 bg-gray-900/50 lg:hidden"
-                    onClick={() => setSidebarOpen(false)}
-                />
-            )}
+        <div className="min-h-screen bg-background selection:bg-orange-100 selection:text-orange-900">
+            {/* Top Navigation */}
+            <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-gray-200/50 dark:border-zinc-800/50 px-6 py-4">
+                <div className="mx-auto max-w-(--breakpoint-2xl) flex items-center justify-between gap-8">
+                    {/* Logo */}
+                    <Link href="/dashboard" className="flex items-center gap-2 group">
+                        <div className="bg-primary p-2 rounded-xl shadow-lg shadow-primary/20 transition-transform group-hover:scale-105">
+                            <Users className="h-6 w-6 text-white" />
+                        </div>
+                        <span className="text-xl font-bold tracking-tight text-foreground hidden sm:block">URNI</span>
+                    </Link>
 
-            {/* Sidebar */}
-            <div
-                className={cn(
-                    "fixed inset-y-0 z-50 flex w-72 flex-col bg-white dark:bg-zinc-900 transition-transform duration-300 ease-in-out lg:translate-x-0 border-r border-gray-200 dark:border-zinc-800",
-                    sidebarOpen ? "translate-x-0" : "-translate-x-full"
-                )}
-            >
-                <div className="flex h-16 shrink-0 items-center justify-between px-6 border-b border-gray-200 dark:border-zinc-800 bg-white/50 backdrop-blur-md dark:bg-zinc-900/50">
-                    <span className="text-xl font-bold tracking-tight bg-orange-500 bg-clip-text text-transparent">
-                        AdminPanel
-                    </span>
-                    <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-gray-500">
-                        <X className="h-6 w-6" />
-                    </button>
-                </div>
-
-                <div className="flex grow flex-col gap-y-5 overflow-y-auto px-6 pb-4 pt-5">
-                    <nav className="flex flex-1 flex-col">
-                        <ul role="list" className="flex flex-1 flex-col gap-y-7">
-                            <li>
-                                <ul role="list" className="-mx-2 space-y-2">
-                                    {navigation.map((item) => {
-                                        const isActive = pathname === item.href;
-                                        return (
-                                            <li key={item.name}>
-                                                <Link
-                                                    href={item.href}
-                                                    className={cn(
-                                                        isActive
-                                                            ? 'bg-orange-50 text-orange-600 dark:bg-orange-500/10 dark:text-orange-400 shadow-sm ring-1 ring-orange-500/20'
-                                                            : 'text-gray-700 hover:text-orange-600 hover:bg-gray-50 dark:text-gray-400 dark:hover:text-white dark:hover:bg-zinc-800/50',
-                                                        'group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold transition-all duration-200'
-                                                    )}
-                                                    onClick={() => setSidebarOpen(false)}
-                                                >
-                                                    <item.icon
-                                                        className={cn(
-                                                            isActive ? 'text-orange-600 dark:text-orange-400' : 'text-gray-400 group-hover:text-orange-600 dark:text-gray-500 dark:group-hover:text-white',
-                                                            'h-6 w-6 shrink-0 transition-colors'
-                                                        )}
-                                                        aria-hidden="true"
-                                                    />
-                                                    {item.name}
-                                                </Link>
-                                            </li>
-                                        );
-                                    })}
-                                </ul>
-                            </li>
-
-                            <li className="mt-auto">
-                                <button
-                                    onClick={handleLogout}
-                                    className="group -mx-2 flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 text-gray-700 hover:bg-gray-50 hover:text-red-600 dark:text-gray-400 dark:hover:bg-red-900/10 dark:hover:text-red-400 w-full transition-colors"
+                    {/* Desktop Navigation */}
+                    <nav className="hidden lg:flex items-center gap-1">
+                        {navigation.map((item) => {
+                            const isActive = pathname === item.href;
+                            return (
+                                <Link
+                                    key={item.name}
+                                    href={item.href}
+                                    className={cn(
+                                        "px-4 py-2 text-sm font-semibold rounded-xl transition-all duration-200",
+                                        isActive
+                                            ? "text-foreground bg-white shadow-sm ring-1 ring-gray-200 dark:bg-zinc-800 dark:ring-zinc-700"
+                                            : "text-gray-500 hover:text-foreground hover:bg-gray-100/50 dark:hover:bg-zinc-800/30"
+                                    )}
                                 >
-                                    <LogOut
-                                        className="h-6 w-6 shrink-0 text-gray-400 group-hover:text-red-600 dark:text-gray-500 dark:group-hover:text-red-400 transition-colors"
-                                        aria-hidden="true"
-                                    />
-                                    Log out
-                                </button>
-                            </li>
-                        </ul>
-                    </nav>
-                </div>
-            </div>
-
-            <div className="lg:pl-72 flex flex-col min-h-screen">
-                {/* Header */}
-                <div className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-gray-200 bg-white/80 backdrop-blur-md px-4 shadow-sm dark:bg-zinc-900/80 dark:border-zinc-800 sm:gap-x-6 sm:px-6 lg:px-8 transition-all">
-                    <button type="button" className="-m-2.5 p-2.5 text-gray-700 lg:hidden" onClick={() => setSidebarOpen(true)}>
-                        <span className="sr-only">Open sidebar</span>
-                        <Menu className="h-6 w-6" aria-hidden="true" />
-                    </button>
-
-                    <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6 justify-end items-center">
-                        <div className="flex items-center gap-x-4 lg:gap-x-6">
-                            <ThemeToggle />
-                            <div className="border-l border-gray-200 pl-4 md:pl-6 dark:border-gray-700">
-                                <Link href="/dashboard/profile" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-                                    <span className="sr-only">Your profile</span>
-                                    <div className="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold">
-                                        {user?.name?.[0] || <UserIcon className="h-5 w-5" />}
-                                    </div>
-                                    <span className="hidden lg:flex lg:items-center">
-                                        <span className="ml-4 text-sm font-semibold leading-6 text-gray-900 dark:text-white" aria-hidden="true">
-                                            {user?.name || 'Admin'}
-                                        </span>
-                                    </span>
+                                    {item.name}
                                 </Link>
+                            );
+                        })}
+                    </nav>
+
+                    {/* Search Bar */}
+                    <div className="flex-1 max-w-md hidden md:block">
+                        <div className="relative group">
+                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-primary transition-colors">
+                                <Menu className="h-4 w-4" /> {/* Swap with search icon if preferred */}
                             </div>
+                            <input
+                                type="text"
+                                placeholder="Enter your search request..."
+                                className="block w-full bg-white dark:bg-zinc-800/50 border-none rounded-full py-2.5 pl-11 pr-4 text-sm shadow-xs ring-1 ring-gray-200 dark:ring-zinc-700 focus:ring-2 focus:ring-primary focus:bg-white transition-all placeholder:text-gray-400"
+                            />
+                        </div>
+                    </div>
+
+                    {/* Right Actions */}
+                    <div className="flex items-center gap-4">
+                        <div className="hidden sm:flex items-center gap-2 pr-4 border-r border-gray-200 dark:border-zinc-800">
+                            <ThemeToggle />
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                            <Link href="/dashboard/profile" className="flex items-center gap-3 p-1 rounded-full hover:bg-white dark:hover:bg-zinc-800 transition-all border border-transparent hover:border-gray-200 dark:hover:border-zinc-700">
+                                <div className="h-10 w-10 rounded-full bg-gray-200 dark:bg-zinc-800 flex items-center justify-center overflow-hidden border border-gray-100 dark:border-zinc-700">
+                                    {user?.name?.[0] || <UserIcon className="h-5 w-5 text-gray-400" />}
+                                </div>
+                                <div className="hidden xl:block pr-2">
+                                    <p className="text-xs font-bold text-foreground leading-tight">{user?.name || 'Administrator'}</p>
+                                    <p className="text-[10px] text-gray-500 font-medium">{user?.role || 'Staff Management'}</p>
+                                </div>
+                            </Link>
+
+                            <button
+                                onClick={handleLogout}
+                                className="p-2.5 rounded-xl text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-all"
+                                title="Log out"
+                            >
+                                <LogOut className="h-5 w-5" />
+                            </button>
+
+                            {/* Mobile menu button */}
+                            <button className="lg:hidden p-2.5 rounded-xl text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800">
+                                <Menu className="h-6 w-6" />
+                            </button>
                         </div>
                     </div>
                 </div>
+            </header>
 
-                <main className="py-10">
-                    <div className="px-4 sm:px-6 lg:px-8">
-                        {children}
-                    </div>
-                </main>
-            </div>
+            {/* Main Content */}
+            <main className="mx-auto max-w-(--breakpoint-2xl) p-6 lg:p-8">
+                {children}
+            </main>
         </div>
     );
 }

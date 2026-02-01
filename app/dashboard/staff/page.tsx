@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Staff } from '@/app/types';
 import { staffApi } from '@/lib/api';
-import { Plus, Pencil, Trash2, Loader2, Clock } from 'lucide-react';
+import { Plus, Pencil, Trash2, Loader2, Clock, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export default function StaffPage() {
@@ -46,104 +46,103 @@ export default function StaffPage() {
     };
 
     return (
-        <div className="space-y-6">
-            <div className="flex items-center justify-between">
+        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold leading-7 text-gray-900 dark:text-white sm:truncate sm:text-3xl sm:tracking-tight">Staff Management</h1>
-                    <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Manage your team members and their roles.</p>
+                    <h1 className="text-3xl font-bold tracking-tight text-foreground">Staff Management</h1>
+                    <p className="mt-1 text-gray-500 text-sm">Manage your team members, departments and their operational roles.</p>
                 </div>
                 <Link
                     href="/dashboard/staff/create"
-                    className="inline-flex items-center gap-x-2 rounded-md bg-orange-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-orange-500 focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-orange-600"
+                    className="inline-flex items-center gap-x-2 rounded-2xl bg-primary px-5 py-3 text-sm font-bold text-white shadow-lg shadow-primary/20 hover:scale-105 transition-transform"
                 >
-                    <Plus className="-ml-0.5 h-5 w-5" aria-hidden="true" />
-                    Add Staff
+                    <Plus className="h-5 w-5" />
+                    Add Staff Member
                 </Link>
             </div>
 
-
             {isLoading ? (
-                <div className="flex justify-center py-10">
-                    <Loader2 className="h-8 w-8 animate-spin text-orange-600" />
+                <div className="flex justify-center py-20">
+                    <Loader2 className="h-10 w-10 animate-spin text-primary" />
                 </div>
             ) : error ? (
-                <div className="rounded-md bg-red-50 p-4 dark:bg-red-900/20">
-                    <div className="flex">
-                        <div className="ml-3">
-                            <h3 className="text-sm font-medium text-red-800 dark:text-red-200">{error}</h3>
-                        </div>
+                <div className="rounded-3xl bg-red-50 p-6 border border-red-100 dark:bg-red-950/20 dark:border-red-900/30">
+                    <div className="flex gap-3">
+                        <div className="h-2 w-2 rounded-full bg-red-500 mt-1.5" />
+                        <h3 className="text-sm font-bold text-red-800 dark:text-red-200">{error}</h3>
                     </div>
                 </div>
             ) : (
-                <div className="overflow-hidden bg-white shadow sm:rounded-md dark:bg-zinc-800">
-                    <ul role="list" className="divide-y divide-gray-200 dark:divide-zinc-700">
+                <div className="bg-white dark:bg-zinc-900 rounded-4xl shadow-sm border border-gray-100 dark:border-zinc-800 overflow-hidden">
+                    <ul role="list" className="divide-y divide-gray-100 dark:divide-zinc-800">
                         {Array.isArray(staff) && staff.map((person) => {
                             const personId = person._id || person.id || '';
+                            const deptName = (typeof person.department === 'object' && person.department !== null)
+                                ? (person.department as any).name
+                                : (person.department || 'General');
+
                             return (
-                                <li key={personId}>
-                                    <div className="block hover:bg-gray-50 dark:hover:bg-zinc-700/50">
-                                        <div className="flex items-center px-4 py-4 sm:px-6">
-                                            <div className="min-w-0 flex-1 sm:flex sm:items-center sm:justify-between">
-                                                <div className="truncate">
-                                                    <div className="flex text-sm">
-                                                        <p className="truncate font-medium text-indigo-600 dark:text-indigo-400">{person.name}</p>
-                                                        <p className="ml-1 shrink-0 font-normal text-gray-500 dark:text-gray-400">
-                                                            in {(typeof person.department === 'object' && person.department !== null) ? (person.department as any).name : (person.department || 'General')}
-                                                        </p>
-                                                    </div>
-                                                    <div className="mt-2 flex">
-                                                        <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
-                                                            <p>
-                                                                {person.email} • {person.role}
-                                                            </p>
-                                                        </div>
-                                                    </div>
+                                <li key={personId} className="group transition-colors hover:bg-gray-50/50 dark:hover:bg-zinc-800/50">
+                                    <div className="flex flex-col sm:flex-row sm:items-center gap-4 px-6 py-6 lg:px-8">
+                                        <div className="flex items-center gap-4 flex-1">
+                                            <div className="h-14 w-14 rounded-2xl bg-gray-100 dark:bg-zinc-800 flex items-center justify-center text-primary font-black text-xl shadow-inner group-hover:scale-110 transition-transform">
+                                                {person.name[0]}
+                                            </div>
+                                            <div className="min-w-0 flex-1">
+                                                <div className="flex items-center gap-2">
+                                                    <h4 className="text-base font-bold text-foreground truncate">{person.name}</h4>
+                                                    <span className={cn(
+                                                        "inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-bold ring-1 ring-inset uppercase tracking-wider",
+                                                        person.status === 'active'
+                                                            ? "bg-green-50 text-green-700 ring-green-600/20 dark:bg-green-900/30 dark:text-green-400"
+                                                            : "bg-gray-50 text-gray-500 ring-gray-400/20 dark:bg-zinc-800 dark:text-gray-400"
+                                                    )}>
+                                                        {person.status}
+                                                    </span>
                                                 </div>
-                                                <div className="mt-4 shrink-0 sm:ml-5 sm:mt-0">
-                                                    <div className="flex overflow-hidden rounded-md border border-gray-300 dark:border-zinc-700">
-                                                        <Link
-                                                            href={`/dashboard/staff/view/${personId}`}
-                                                            className="rounded-l bg-white px-2 py-1 text-xs font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-zinc-700 dark:text-gray-200 dark:ring-zinc-600 dark:hover:bg-zinc-600 border-r border-gray-300 dark:border-zinc-600"
-                                                            title="View Profile & Attendance"
-                                                        >
-                                                            <Clock className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-                                                            <span className="sr-only">View</span>
-                                                        </Link>
-                                                        <Link
-                                                            href={`/dashboard/staff/${personId}`}
-                                                            className="bg-white px-2 py-1 text-xs font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-zinc-700 dark:text-gray-200 dark:ring-zinc-600 dark:hover:bg-zinc-600"
-                                                        >
-                                                            <Pencil className="h-4 w-4 text-orange-600 dark:text-orange-400" />
-                                                            <span className="sr-only">Edit</span>
-                                                        </Link>
-                                                        <button
-                                                            onClick={() => handleDelete(personId)}
-                                                            className="bg-white p-2 text-red-400 hover:text-red-500 dark:bg-zinc-800 dark:text-red-400 dark:hover:text-red-300 rounded-r shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-zinc-600"
-                                                        >
-                                                            <span className="sr-only">Delete</span>
-                                                            <Trash2 className="h-5 w-5" />
-                                                        </button>
-                                                    </div>
+                                                <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 items-center text-xs text-gray-400 font-medium">
+                                                    <span className="flex items-center gap-1.5"><Clock className="h-3 w-3" /> {deptName}</span>
+                                                    <span className="flex items-center gap-1.5"><Plus className="h-3 w-3" /> {person.role}</span>
+                                                    <span className="hidden sm:inline text-gray-200">|</span>
+                                                    <span className="truncate">{person.email}</span>
                                                 </div>
                                             </div>
-                                            <div className="ml-5 shrink-0">
-                                                <span className={cn(
-                                                    "inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset",
-                                                    person.status === 'active'
-                                                        ? "bg-green-50 text-green-700 ring-green-600/20 dark:bg-green-900/30 dark:text-green-400 dark:ring-green-400/20"
-                                                        : "bg-gray-50 text-gray-600 ring-gray-500/10 dark:bg-gray-900/30 dark:text-gray-400 dark:ring-gray-400/20"
-                                                )}>
-                                                    {person.status}
-                                                </span>
-                                            </div>
+                                        </div>
+
+                                        <div className="flex items-center gap-2 sm:ml-auto">
+                                            <Link
+                                                href={`/dashboard/staff/view/${personId}`}
+                                                className="p-3 rounded-2xl bg-gray-50 text-orange-600 hover:bg-orange-600 hover:text-white dark:bg-zinc-800 dark:hover:bg-orange-600 transition-all shadow-sm"
+                                                title="View History"
+                                            >
+                                                <Clock className="h-5 w-5" />
+                                            </Link>
+                                            <Link
+                                                href={`/dashboard/staff/${personId}`}
+                                                className="p-3 rounded-2xl bg-gray-50 text-gray-500 hover:bg-zinc-800 hover:text-white dark:bg-zinc-800 dark:hover:bg-zinc-700 transition-all shadow-sm"
+                                                title="Edit Profile"
+                                            >
+                                                <Pencil className="h-5 w-5" />
+                                            </Link>
+                                            <button
+                                                onClick={() => handleDelete(personId)}
+                                                className="p-3 rounded-2xl bg-gray-50 text-red-400 hover:bg-red-500 hover:text-white dark:bg-zinc-800 dark:hover:bg-red-600 transition-all shadow-sm"
+                                                title="Delete Record"
+                                            >
+                                                <Trash2 className="h-5 w-5" />
+                                            </button>
                                         </div>
                                     </div>
                                 </li>
                             );
                         })}
                         {staff.length === 0 && (
-                            <li className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
-                                No staff members found.
+                            <li className="px-6 py-20 text-center">
+                                <div className="inline-flex p-4 rounded-3xl bg-gray-50 dark:bg-zinc-800 mb-4">
+                                    <Users className="h-10 w-10 text-gray-300" />
+                                </div>
+                                <h3 className="text-lg font-bold text-foreground">No team members yet</h3>
+                                <p className="text-sm text-gray-400 mt-1 max-w-sm mx-auto">Get started by adding your first staff member to the platform.</p>
                             </li>
                         )}
                     </ul>

@@ -3,7 +3,7 @@
 import { use, useState, useEffect } from 'react';
 import { Staff, AttendanceRecord } from '@/app/types';
 import { staffApi, attendanceApi } from '@/lib/api';
-import { Loader2, Mail, Phone, Briefcase, Building, ShieldCheck, Clock, Calendar, ChevronLeft, CalendarCheck, MapPin } from 'lucide-react';
+import { Loader2, Mail, Phone, Briefcase, Building, ShieldCheck, Clock, Calendar, ChevronLeft, CalendarCheck, MapPin, Plus, TrendingUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 
@@ -75,133 +75,163 @@ export default function StaffViewPage({ params }: { params: Promise<{ id: string
     }
 
     return (
-        <div className="max-w-5xl mx-auto space-y-8 pb-12">
-            <Link href="/dashboard/staff" className="flex items-center text-sm text-gray-500 hover:text-orange-600 mb-2 transition-colors">
-                <ChevronLeft className="h-4 w-4 mr-1" /> Back to Staff Management
-            </Link>
-
-            <div className="flex items-center justify-between">
-                <div>
-                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Staff Profile</h1>
-                    <p className="mt-1 text-gray-500 dark:text-gray-400">Detailed overview and attendance history for {staff.name}.</p>
-                </div>
+        <div className="mx-auto space-y-8 pb-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <Link href="/dashboard/staff" className="flex items-center text-sm font-bold text-gray-400 hover:text-primary transition-all group">
+                    <div className="p-2 rounded-xl bg-white dark:bg-zinc-900 shadow-sm border border-gray-100 dark:border-zinc-800 mr-3 group-hover:scale-110">
+                        <ChevronLeft className="h-4 w-4" />
+                    </div>
+                    Back to Management
+                </Link>
                 <Link
                     href={`/dashboard/staff/${id}`}
-                    className="inline-flex items-center gap-x-2 rounded-md bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-zinc-800 dark:text-white dark:ring-zinc-700"
+                    className="inline-flex items-center gap-x-2 rounded-2xl bg-white dark:bg-zinc-800 px-5 py-3 text-sm font-bold text-foreground shadow-sm ring-1 ring-gray-200 dark:ring-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-700 transition-all"
                 >
+                    <Plus className="h-4 w-4" />
                     Edit Details
                 </Link>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                 {/* Left Column: Profile Card */}
-                <div className="lg:col-span-1 space-y-8">
-                    <div className="overflow-hidden bg-white shadow-xl rounded-2xl dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800">
-                        <div className="h-24 bg-orange-500" />
-                        <div className="relative px-6 pb-6">
-                            <div className="relative -mt-12 flex justify-center">
-                                <div className="h-24 w-24 rounded-2xl bg-white p-1 shadow-lg dark:bg-zinc-800">
-                                    <div className="h-full w-full rounded-xl bg-gray-500 flex items-center justify-center text-orange-500 font-bold text-3xl">
+                <div className="lg:col-span-4 space-y-8">
+                    <div className="bg-white dark:bg-zinc-900 rounded-4xl shadow-sm border border-gray-100 dark:border-zinc-800 overflow-hidden group">
+                        <div className="h-32 bg-primary relative">
+                            <div className="absolute inset-0 bg-linear-to-b from-black/10 to-transparent" />
+                        </div>
+                        <div className="relative px-8 pb-8">
+                            <div className="relative -mt-16 flex justify-center">
+                                <div className="h-32 w-32 rounded-3xl bg-white dark:bg-zinc-900 p-2 shadow-2xl transition-transform group-hover:scale-105">
+                                    <div className="h-full w-full rounded-2xl bg-gray-100 dark:bg-zinc-800 flex items-center justify-center text-primary font-black text-4xl shadow-inner uppercase">
                                         {staff.name?.[0]}
                                     </div>
                                 </div>
                             </div>
-                            <div className="mt-4 text-center">
-                                <h2 className="text-xl font-bold text-gray-900 dark:text-white">{staff.name}</h2>
-                                <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mt-1">{staff.role}</p>
-                                <span className={cn(
-                                    "mt-3 inline-flex items-center rounded-full px-3 py-0.5 text-xs font-semibold ring-1 ring-inset",
-                                    staff.status === 'active'
-                                        ? "bg-green-50 text-green-700 ring-green-600/20 dark:bg-green-900/30 dark:text-green-400"
-                                        : "bg-gray-50 text-gray-600 ring-gray-500/10 dark:bg-gray-900/30 dark:text-gray-400"
-                                )}>
-                                    {staff.status}
-                                </span>
+                            <div className="mt-6 text-center">
+                                <h1 className="text-2xl font-black text-foreground tracking-tight">{staff.name}</h1>
+                                <p className="text-sm font-bold text-gray-400 mt-1 uppercase tracking-widest">{staff.role}</p>
+                                <div className="mt-4 flex justify-center">
+                                    <span className={cn(
+                                        "inline-flex items-center rounded-full px-4 py-1 text-xs font-black ring-1 ring-inset uppercase tracking-tighter",
+                                        staff.status === 'active'
+                                            ? "bg-green-50 text-green-700 ring-green-600/20 dark:bg-green-900/30 dark:text-green-400"
+                                            : "bg-gray-50 text-gray-500 ring-gray-400/20 dark:bg-zinc-800 dark:text-gray-400"
+                                    )}>
+                                        {staff.status}
+                                    </span>
+                                </div>
                             </div>
 
-                            <div className="mt-8 space-y-4">
-                                <div className="flex items-center gap-3 text-sm">
-                                    <Mail className="h-4 w-4 text-gray-400" />
-                                    <span className="text-gray-600 dark:text-gray-300 truncate">{staff.email}</span>
+                            <div className="mt-10 space-y-5">
+                                <div className="flex items-center gap-4 group/item">
+                                    <div className="h-10 w-10 rounded-xl bg-gray-50 dark:bg-zinc-800 flex items-center justify-center text-gray-400 group-hover/item:text-primary transition-colors">
+                                        <Mail className="h-5 w-5" />
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Email Address</p>
+                                        <p className="text-sm font-bold text-foreground truncate">{staff.email}</p>
+                                    </div>
                                 </div>
-                                <div className="flex items-center gap-3 text-sm">
-                                    <Phone className="h-4 w-4 text-gray-400" />
-                                    <span className="text-gray-600 dark:text-gray-300">{staff.phone || 'No phone'}</span>
+                                <div className="flex items-center gap-4 group/item">
+                                    <div className="h-10 w-10 rounded-xl bg-gray-50 dark:bg-zinc-800 flex items-center justify-center text-gray-400 group-hover/item:text-primary transition-colors">
+                                        <Phone className="h-5 w-5" />
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Phone Number</p>
+                                        <p className="text-sm font-bold text-foreground">{staff.phone || 'No contact set'}</p>
+                                    </div>
                                 </div>
-                                <div className="flex items-center gap-3 text-sm">
-                                    <Building className="h-4 w-4 text-gray-400" />
-                                    <span className="text-gray-600 dark:text-gray-300">
-                                        {(typeof staff.department === 'object' && staff.department !== null) ? (staff.department as any).name : (staff.department || 'General')}
-                                    </span>
+                                <div className="flex items-center gap-4 group/item">
+                                    <div className="h-10 w-10 rounded-xl bg-gray-50 dark:bg-zinc-800 flex items-center justify-center text-gray-400 group-hover/item:text-primary transition-colors">
+                                        <Building className="h-5 w-5" />
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Department</p>
+                                        <p className="text-sm font-bold text-foreground">
+                                            {(typeof staff.department === 'object' && staff.department !== null) ? (staff.department as any).name : (staff.department || 'General Administration')}
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-900/5 dark:bg-zinc-800 dark:ring-zinc-700">
-                        <h3 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-4">Quick Stats</h3>
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="bg-orange-50 dark:bg-orange-900/10 p-4 rounded-xl border border-orange-100 dark:border-orange-900/20">
-                                <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">{attendance.filter(a => a.status === 'present').length}</p>
-                                <p className="text-xs text-orange-700 dark:text-orange-300 mt-1">Days Present</p>
+                    <div className="bg-white dark:bg-zinc-900 p-8 rounded-4xl shadow-sm border border-gray-100 dark:border-zinc-800 space-y-6">
+                        <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest">Engagement Overview</h3>
+                        <div className="grid grid-cols-1 gap-4">
+                            <div className="flex items-center justify-between p-4 rounded-3xl bg-gray-50 dark:bg-zinc-800/50">
+                                <div>
+                                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none">Days Present</p>
+                                    <p className="text-4xl font-black text-primary mt-2">{attendance.filter(a => a.status === 'present').length}</p>
+                                </div>
+                                <div className="h-14 w-14 rounded-2xl bg-white dark:bg-zinc-800 shadow-sm flex items-center justify-center">
+                                    <CalendarCheck className="h-6 w-6 text-primary" />
+                                </div>
                             </div>
-                            <div className="bg-indigo-50 dark:bg-indigo-900/10 p-4 rounded-xl border border-indigo-100 dark:border-indigo-900/20">
-                                <p className="text-2xl font-bold text-gray-500">{attendance.length}</p>
-                                <p className="text-xs text-gray-500 mt-1">Total Logs</p>
+                            <div className="flex items-center justify-between p-4 rounded-3xl bg-gray-50 dark:bg-zinc-800/50">
+                                <div>
+                                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none">Total Logs</p>
+                                    <p className="text-4xl font-black text-foreground mt-2">{attendance.length}</p>
+                                </div>
+                                <div className="h-14 w-14 rounded-2xl bg-white dark:bg-zinc-800 shadow-sm flex items-center justify-center">
+                                    <Clock className="h-6 w-6 text-gray-400" />
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 {/* Right Column: Attendance History */}
-                <div className="lg:col-span-2 space-y-8">
-                    <div className="bg-white shadow-sm rounded-2xl dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 overflow-hidden">
-                        <div className="px-6 py-5 border-b border-gray-100 dark:border-zinc-800 flex items-center justify-between">
-                            <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                                <CalendarCheck className="h-5 w-5 text-orange-600" />
-                                Attendance History
-                            </h3>
+                <div className="lg:col-span-8 space-y-8 h-full">
+                    <div className="bg-white dark:bg-zinc-900 rounded-4xl shadow-sm border border-gray-100 dark:border-zinc-800 overflow-hidden flex flex-col min-h-full">
+                        <div className="px-8 py-8 flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                                <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
+                                    <Calendar className="h-6 w-6" />
+                                </div>
+                                <h2 className="text-2xl font-black text-foreground tracking-tight">Timeline History</h2>
+                            </div>
+                            <button className="text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-primary transition-colors">Clear History</button>
                         </div>
 
-                        <div className="overflow-x-auto">
+                        <div className="flex-1">
                             <table className="w-full text-left border-collapse">
                                 <thead>
-                                    <tr className="bg-gray-50 dark:bg-zinc-800/50">
-                                        <th className="px-6 py-3 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
-                                        <th className="px-6 py-3 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
-                                        <th className="px-6 py-3 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Check In</th>
-                                        <th className="px-6 py-3 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Check Out</th>
+                                    <tr className="bg-gray-50/50 dark:bg-zinc-800/30">
+                                        <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Calendar Date</th>
+                                        <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Attendance Status</th>
+                                        <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Time of Entry</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-100 dark:divide-zinc-800">
                                     {attendance.length > 0 ? (
                                         attendance.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map((record) => (
-                                            <tr key={record._id} className="hover:bg-gray-50 dark:hover:bg-zinc-800/30 transition-colors">
-                                                <td className="px-6 py-4 text-sm text-gray-900 dark:text-gray-200 font-medium">
+                                            <tr key={record._id} className="group hover:bg-gray-50/50 dark:hover:bg-zinc-800/30 transition-all">
+                                                <td className="px-8 py-6 text-sm font-bold text-foreground">
                                                     {new Date(record.date).toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}
                                                 </td>
-                                                <td className="px-6 py-4">
+                                                <td className="px-8 py-6">
                                                     <span className={cn(
-                                                        "inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset",
+                                                        "inline-flex items-center rounded-full px-3 py-1 text-[10px] font-black ring-1 ring-inset uppercase tracking-tighter",
                                                         record.status === 'present'
                                                             ? "bg-green-50 text-green-700 ring-green-600/20 dark:bg-green-900/30 dark:text-green-400"
                                                             : "bg-red-50 text-red-700 ring-red-600/20 dark:bg-red-900/30 dark:text-red-400"
                                                     )}>
-                                                        {record.status.toUpperCase()}
+                                                        {record.status}
                                                     </span>
                                                 </td>
-                                                <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
-                                                    {record.checkIn ? new Date(record.checkIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '-'}
-                                                </td>
-                                                <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
-                                                    {record.checkOut ? new Date(record.checkOut).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '-'}
+                                                <td className="px-8 py-6 text-sm font-bold text-gray-400 text-right group-hover:text-foreground transition-colors">
+                                                    {record.checkIn ? new Date(record.checkIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}
                                                 </td>
                                             </tr>
                                         ))
                                     ) : (
                                         <tr>
-                                            <td colSpan={4} className="px-6 py-10 text-center text-sm text-gray-500 dark:text-gray-400">
-                                                No attendance records found for this staff member.
+                                            <td colSpan={3} className="px-8 py-24 text-center">
+                                                <div className="inline-flex p-4 rounded-3xl bg-gray-50 dark:bg-zinc-800 mb-4">
+                                                    <Calendar className="h-8 w-8 text-gray-200" />
+                                                </div>
+                                                <p className="text-sm font-bold text-gray-400">No attendance data collected yet.</p>
                                             </td>
                                         </tr>
                                     )}
@@ -210,16 +240,21 @@ export default function StaffViewPage({ params }: { params: Promise<{ id: string
                         </div>
                     </div>
 
-                    <div className="bg-linear-to-br from-orange-500 to-amber-600 rounded-2xl p-6 shadow-lg text-white">
-                        <div className="flex items-start gap-4">
-                            <Clock className="h-8 w-8 text-white/80" />
-                            <div>
-                                <h4 className="text-lg font-bold">Attendance Policy</h4>
-                                <p className="text-white/80 text-sm mt-2">
-                                    Staff are expected to check in by 9:00 AM. Three late arrivals in a month will result in a notification to the manager.
-                                    Please ensure all check-outs are recorded before leaving.
+                    <div className="bg-foreground dark:bg-zinc-900 rounded-4xl p-8 shadow-2xl relative overflow-hidden group">
+                        <div className="flex items-start gap-6 relative z-10">
+                            <div className="h-16 w-16 rounded-3xl bg-white/10 backdrop-blur-md flex items-center justify-center text-primary shadow-xl group-hover:scale-110 transition-transform">
+                                <ShieldCheck className="h-8 w-8" />
+                            </div>
+                            <div className="space-y-4 max-w-lg">
+                                <h4 className="text-xl font-black text-white tracking-tight">Security & Compliance Policy</h4>
+                                <p className="text-gray-400 text-sm leading-relaxed">
+                                    System activity is logged 24/7. All attendance records are cryptographically verified to ensure data integrity.
+                                    Late arrivals are automatically flagged by the URNI core.
                                 </p>
                             </div>
+                        </div>
+                        <div className="absolute top-0 right-0 p-8">
+                            <TrendingUp className="h-20 w-20 text-white/5" />
                         </div>
                     </div>
                 </div>

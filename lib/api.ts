@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { AuthResponse, Staff } from '@/app/types';
+import { AuthResponse, Staff, Ticket } from '@/app/types';
 
 const API_URL = 'https://urni-project-backend-44bx.onrender.com';
 
@@ -83,6 +83,25 @@ export const attendanceApi = {
             return response.data;
         } catch (e) {
             // Fallback to userId if staffId fails, or just throw
+            throw e;
+        }
+    },
+};
+
+export const ticketApi = {
+    getAll: async (): Promise<any> => {
+        try {
+            const response = await api.get('api/tickets');
+            return response.data;
+        } catch (e) {
+            throw e;
+        }
+    },
+    create: async (ticketData: Partial<Ticket>): Promise<any> => {
+        try {
+            const response = await api.post('api/tickets', ticketData);
+            return response.data;
+        } catch (e) {
             throw e;
         }
     },

@@ -2,6 +2,7 @@ export interface User {
     id: string;
     name: string;
     email: string;
+    role?: string;
     token?: string;
 }
 
@@ -26,10 +27,12 @@ export interface Ticket {
     id: string;
     title: string;
     description: string;
-    status: 'open' | 'in_progress' | 'closed';
-    priority: 'low' | 'medium' | 'high';
-    createdAt: string;
-    userId: string;
+    severity: number;
+    status: 'OPEN' | 'RESOLVED' | 'CLOSED';
+    target_user_id: string;
+    issued_by_id: string;
+    created_at: string;
+    resolved_at: string | null;
 }
 export interface AttendanceRecord {
     _id: string;
