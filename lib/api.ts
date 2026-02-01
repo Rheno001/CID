@@ -45,7 +45,14 @@ export const staffApi = {
     getById: async (id: string): Promise<Staff> => {
         try {
             const response = await api.get(`api/lookups/users/${id}`);
-            return response.data;
+            const data = response.data;
+            // Defensive check: handle nested data or user property
+            if (data && typeof data === 'object' && data.data) {
+                return data.data;
+            } else if (data && typeof data === 'object' && data.user) {
+                return data.user;
+            }
+            return data;
         } catch (e) {
             throw e;
         }
@@ -55,6 +62,27 @@ export const staffApi = {
             const response = await api.get('api/lookups/users/me');
             return response.data;
         } catch (e) {
+            throw e;
+        }
+    },
+};
+
+export const attendanceApi = {
+    getAll: async (): Promise<any> => {
+        try {
+            const response = await api.get('api/attendance/status');
+            return response.data;
+        } catch (e) {
+            throw e;
+        }
+    },
+    getByStaffId: async (staffId: string): Promise<any> => {
+        try {
+            // Trying query parameter as path segment caused 404
+            const response = await api.get(`api/attendance/status?staffId=${staffId}`);
+            return response.data;
+        } catch (e) {
+            // Fallback to userId if staffId fails, or just throw
             throw e;
         }
     },

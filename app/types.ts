@@ -7,6 +7,7 @@ export interface User {
 
 export interface Staff {
     _id: string;
+    id?: string;
     name: string;
     email: string;
     role: string;
@@ -29,4 +30,18 @@ export interface Ticket {
     priority: 'low' | 'medium' | 'high';
     createdAt: string;
     userId: string;
+}
+export interface AttendanceRecord {
+    _id: string;
+    userId: string;
+    date: string;
+    status: 'present' | 'absent' | 'late' | 'excused';
+    checkIn?: string;
+    checkOut?: string;
+}
+
+export interface AttendanceResponse {
+    success: boolean;
+    count: number;
+    data: AttendanceRecord[];
 }

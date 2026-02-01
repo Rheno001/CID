@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Staff } from '@/app/types';
 import { staffApi } from '@/lib/api';
-import { Plus, Pencil, Trash2, Loader2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Loader2, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export default function StaffPage() {
@@ -39,10 +39,10 @@ export default function StaffPage() {
     }, []);
 
 
-    const handleDelete = async (id: string) => {
+    const handleDelete = async (staffId: string) => {
         if (!confirm('Are you sure you want to delete this staff member?')) return;
         if (!Array.isArray(staff)) return;
-        setStaff(staff.filter((s) => s._id !== id));
+        setStaff(staff.filter((s) => (s._id || s.id) !== staffId));
     };
 
     return (
@@ -77,57 +77,70 @@ export default function StaffPage() {
             ) : (
                 <div className="overflow-hidden bg-white shadow sm:rounded-md dark:bg-zinc-800">
                     <ul role="list" className="divide-y divide-gray-200 dark:divide-zinc-700">
-                        {Array.isArray(staff) && staff.map((person) => (
-                            <li key={person._id}>
-                                <div className="block hover:bg-gray-50 dark:hover:bg-zinc-700/50">
-                                    <div className="flex items-center px-4 py-4 sm:px-6">
-                                        <div className="min-w-0 flex-1 sm:flex sm:items-center sm:justify-between">
-                                            <div className="truncate">
-                                                <div className="flex text-sm">
-                                                    <p className="truncate font-medium text-indigo-600 dark:text-indigo-400">{person.name}</p>
-                                                    <p className="ml-1 flex-shrink-0 font-normal text-gray-500 dark:text-gray-400">in {person.department}</p>
-                                                </div>
-                                                <div className="mt-2 flex">
-                                                    <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
-                                                        <p>
-                                                            {person.email} • {person.role}
+                        {Array.isArray(staff) && staff.map((person) => {
+                            const personId = person._id || person.id || '';
+                            return (
+                                <li key={personId}>
+                                    <div className="block hover:bg-gray-50 dark:hover:bg-zinc-700/50">
+                                        <div className="flex items-center px-4 py-4 sm:px-6">
+                                            <div className="min-w-0 flex-1 sm:flex sm:items-center sm:justify-between">
+                                                <div className="truncate">
+                                                    <div className="flex text-sm">
+                                                        <p className="truncate font-medium text-indigo-600 dark:text-indigo-400">{person.name}</p>
+                                                        <p className="ml-1 shrink-0 font-normal text-gray-500 dark:text-gray-400">
+                                                            in {(typeof person.department === 'object' && person.department !== null) ? (person.department as any).name : (person.department || 'General')}
                                                         </p>
+                                                    </div>
+                                                    <div className="mt-2 flex">
+                                                        <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                                                            <p>
+                                                                {person.email} • {person.role}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className="mt-4 shrink-0 sm:ml-5 sm:mt-0">
+                                                    <div className="flex overflow-hidden rounded-md border border-gray-300 dark:border-zinc-700">
+                                                        <Link
+                                                            href={`/dashboard/staff/view/${personId}`}
+                                                            className="rounded-l bg-white px-2 py-1 text-xs font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-zinc-700 dark:text-gray-200 dark:ring-zinc-600 dark:hover:bg-zinc-600 border-r border-gray-300 dark:border-zinc-600"
+                                                            title="View Profile & Attendance"
+                                                        >
+                                                            <Clock className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                                                            <span className="sr-only">View</span>
+                                                        </Link>
+                                                        <Link
+                                                            href={`/dashboard/staff/${personId}`}
+                                                            className="bg-white px-2 py-1 text-xs font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-zinc-700 dark:text-gray-200 dark:ring-zinc-600 dark:hover:bg-zinc-600"
+                                                        >
+                                                            <Pencil className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+                                                            <span className="sr-only">Edit</span>
+                                                        </Link>
+                                                        <button
+                                                            onClick={() => handleDelete(personId)}
+                                                            className="bg-white p-2 text-red-400 hover:text-red-500 dark:bg-zinc-800 dark:text-red-400 dark:hover:text-red-300 rounded-r shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-zinc-600"
+                                                        >
+                                                            <span className="sr-only">Delete</span>
+                                                            <Trash2 className="h-5 w-5" />
+                                                        </button>
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div className="mt-4 flex-shrink-0 sm:ml-5 sm:mt-0">
-                                                <div className="flex overflow-hidden rounded-md border border-gray-300 dark:border-zinc-700">
-                                                    <Link
-                                                        href={`/dashboard/staff/${person._id}`}
-                                                        className="rounded bg-white px-2 py-1 text-xs font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-zinc-700 dark:text-gray-200 dark:ring-zinc-600 dark:hover:bg-zinc-600"
-                                                    >
-                                                        <Pencil className="h-4 w-4 text-orange-600 dark:text-orange-400" />
-                                                        <span className="sr-only">Edit</span>
-                                                    </Link>
-                                                    <button
-                                                        onClick={() => handleDelete(person._id)}
-                                                        className="bg-white p-2 text-red-400 hover:text-red-500 dark:bg-zinc-800 dark:text-red-400 dark:hover:text-red-300"
-                                                    >
-                                                        <span className="sr-only">Delete</span>
-                                                        <Trash2 className="h-5 w-5" />
-                                                    </button>
-                                                </div>
+                                            <div className="ml-5 shrink-0">
+                                                <span className={cn(
+                                                    "inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset",
+                                                    person.status === 'active'
+                                                        ? "bg-green-50 text-green-700 ring-green-600/20 dark:bg-green-900/30 dark:text-green-400 dark:ring-green-400/20"
+                                                        : "bg-gray-50 text-gray-600 ring-gray-500/10 dark:bg-gray-900/30 dark:text-gray-400 dark:ring-gray-400/20"
+                                                )}>
+                                                    {person.status}
+                                                </span>
                                             </div>
                                         </div>
-                                        <div className="ml-5 flex-shrink-0">
-                                            <span className={cn(
-                                                "inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset",
-                                                person.status === 'active'
-                                                    ? "bg-green-50 text-green-700 ring-green-600/20 dark:bg-green-900/30 dark:text-green-400 dark:ring-green-400/20"
-                                                    : "bg-gray-50 text-gray-600 ring-gray-500/10 dark:bg-gray-900/30 dark:text-gray-400 dark:ring-gray-400/20"
-                                            )}>
-                                                {person.status}
-                                            </span>
-                                        </div>
                                     </div>
-                                </div>
-                            </li>
-                        ))}
+                                </li>
+                            );
+                        })}
                         {staff.length === 0 && (
                             <li className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
                                 No staff members found.
