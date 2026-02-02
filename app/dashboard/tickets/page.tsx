@@ -186,7 +186,7 @@ export default function TicketsPage() {
                                     onChange={(e) => setNewTicket({ ...newTicket, target_user_id: e.target.value })}
                                     className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary outline-none transition-all placeholder:text-gray-600"
                                 >
-                                    <option value="" disabled className="text-zinc-900">Select staff member</option>
+                                    <option key="staff-placeholder" value="" disabled className="text-zinc-900">Select staff member</option>
                                     {staff.map((s) => (
                                         <option key={s._id || s.id} value={s._id || s.id} className="text-zinc-900 italic font-bold">
                                             {s.name} ({s.role})

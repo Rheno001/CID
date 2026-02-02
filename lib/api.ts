@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { AuthResponse, Staff, Ticket } from '@/app/types';
+import { AuthResponse, Staff, Ticket, Role, Department } from '@/app/types';
 
 const API_URL = 'https://urni-project-backend-44bx.onrender.com';
 
@@ -65,6 +65,57 @@ export const staffApi = {
             throw e;
         }
     },
+    getByDepartment: async (departmentId: string): Promise<Staff[]> => {
+        try {
+            console.log(`API Call: api/lookups/users?department_id=${departmentId}`);
+            const response = await api.get(`api/lookups/users?department_id=${departmentId}`);
+            const data = response.data;
+            console.log(`Response for dept ${departmentId}:`, Array.isArray(data) ? `Array(${data.length})` : typeof data);
+
+            let users: Staff[] = [];
+            if (Array.isArray(data)) {
+                users = data;
+            } else if (data && typeof data === 'object' && Array.isArray((data as any).data)) {
+                users = (data as any).data;
+            } else if (data && typeof data === 'object' && Array.isArray((data as any).users)) {
+                users = (data as any).users;
+            }
+
+            // Client-side filtering to ensure accuracy (API might ignore param and return all users)
+            return users.filter(user => {
+                const uDeptId = user.department_id ||
+                    (typeof user.department === 'object' && user.department ? (user.department as any)._id || (user.department as any).id : null);
+
+                // If department is a string, it might be the ID or Name. 
+                // We check against ID mostly.
+                const uDeptString = typeof user.department === 'string' ? user.department : '';
+
+                // Loose equality check for IDs (string vs likely string)
+                return uDeptId == departmentId || uDeptString == departmentId;
+            });
+        } catch (e) {
+            // Return empty array on error to allow other requests to proceed
+            console.error(`Failed to fetch staff for department ${departmentId}`, e);
+            return [];
+        }
+    },
+    create: async (staffData: Partial<Staff>): Promise<any> => {
+        try {
+            const response = await api.post('api/auth/register', staffData);
+            return response.data;
+        } catch (e) {
+            throw e;
+        }
+    },
+    update: async (id: string, staffData: Partial<Staff>): Promise<any> => {
+        try {
+            console.log(`Updating staff at path: api/auth/update/${id}`);
+            const response = await api.put(`api/auth/update/${id}`, staffData);
+            return response.data;
+        } catch (e) {
+            throw e;
+        }
+    },
 };
 
 export const attendanceApi = {
@@ -106,5 +157,44 @@ export const ticketApi = {
         }
     },
 };
+
+export const lookupApi = {
+    getRoles: async (): Promise<Role[]> => {
+        try {
+            const response = await api.get('api/lookups/roles');
+            return response.data;
+        } catch (e) {
+            throw e;
+        }
+    },
+    getDepartments: async (): Promise<Department[]> => {
+        try {
+            const response = await api.get('api/departments');
+            const data = response.data;
+            if (Array.isArray(data)) {
+                return data;
+            } else if (data && typeof data === 'object' && Array.isArray((data as any).data)) {
+                return (data as any).data;
+            } else if (data && typeof data === 'object' && Array.isArray((data as any).departments)) {
+                return (data as any).departments;
+            }
+            return [];
+        } catch (e) {
+            throw e;
+        }
+    },
+};
+
+export const departmentApi = {
+    getById: async (id: string): Promise<any> => {
+        try {
+            const response = await api.get(`api/departments/${id}`);
+            return response.data;
+        } catch (e) {
+            throw e;
+        }
+    }
+};
+
 
 export default api;

@@ -13,7 +13,7 @@ import {
     AlertCircle
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { staffApi, attendanceApi, ticketApi } from '@/lib/api';
+import { staffApi, attendanceApi, ticketApi, lookupApi, departmentApi } from '@/lib/api';
 import Link from 'next/link';
 
 export default function DashboardPage() {
@@ -27,14 +27,18 @@ export default function DashboardPage() {
     useEffect(() => {
         const fetchDashboardData = async () => {
             try {
-                const [staffData, attendanceData, ticketsData] = await Promise.all([
+                const [staffData, attendanceData, ticketsData, departmentData] = await Promise.all([
                     staffApi.getAll(),
                     attendanceApi.getAll(),
-                    ticketApi.getAll()
+                    ticketApi.getAll(),
+                    lookupApi.getDepartments()
                 ]);
 
                 const allStaff = Array.isArray(staffData) ? staffData :
                     (staffData as any).data || (staffData as any).users || [];
+
+                const allDepartments = Array.isArray(departmentData) ? departmentData :
+                    (departmentData as any).data || (departmentData as any).departments || [];
 
                 setStaffCount(allStaff.length);
 
@@ -49,23 +53,66 @@ export default function DashboardPage() {
                     (ticketsData as any).data || (ticketsData as any).tickets || [];
                 setLatestTickets(allTickets.slice(-3).reverse());
 
-                // Department Breakdown
-                const depts: Record<string, number> = {};
-                allStaff.forEach((s: any) => {
-                    const dName = (typeof s.department === 'object' && s.department !== null)
-                        ? s.department.name
-                        : (s.department || 'General');
-                    depts[dName] = (depts[dName] || 0) + 1;
+                // Department Breakdown: Specific API Calls per Department
+                console.log('Fetching detailed department stats via /api/departments/{id} for:', allDepartments.length, 'departments');
+                const deptStatsPromises = allDepartments.map(async (dept: any) => {
+                    const deptId = dept._id || dept.id;
+                    if (!deptId) return { name: dept.name, count: 0, id: 'unknown' };
+
+                    try {
+                        const deptDetails = await departmentApi.getById(deptId);
+                        // Handle various possible response structures for users list
+                        let count = 0;
+                        if (deptDetails) {
+                            if (Array.isArray(deptDetails.users)) count = deptDetails.users.length;
+                            else if (Array.isArray(deptDetails.employees)) count = deptDetails.employees.length;
+                            else if (Array.isArray(deptDetails.staff)) count = deptDetails.staff.length;
+                            // Fallback: check if the response itself is an array (unlikely for getById but possible)
+                            else if (Array.isArray(deptDetails)) count = deptDetails.length;
+                            // Check for wrapped data object
+                            else if (deptDetails.data && Array.isArray(deptDetails.data)) count = deptDetails.data.length;
+                            else if (deptDetails.data && Array.isArray(deptDetails.data.users)) count = deptDetails.data.users.length;
+                        }
+
+                        console.log(`Staff count for ${dept.name} (${deptId}):`, count);
+                        return {
+                            name: dept.name,
+                            count: count,
+                            id: deptId
+                        };
+                    } catch (err) {
+                        console.error(`Error fetching details for ${dept.name}:`, err);
+                        return { name: dept.name, count: 0, id: deptId };
+                    }
                 });
 
-                const deptList = Object.entries(depts).map(([name, count]) => ({
-                    name,
-                    count,
-                    color: name.includes('Dev') ? 'bg-primary' :
-                        name.includes('Ops') ? 'bg-blue-500' :
-                            name.includes('Admin') ? 'bg-foreground' : 'bg-zinc-500'
+                const fetchedDeptStats = await Promise.all(deptStatsPromises);
+                console.log('Final Department Stats:', fetchedDeptStats);
+
+                // Sort by count descending
+                const sortedDepts = fetchedDeptStats
+                    .filter(d => d.count > 0 || true) // Keep all for now to see if 0s are the issue
+                    .sort((a, b) => b.count - a.count)
+                    .slice(0, 5); // Top 5
+
+                // Color palette for dynamic assignment
+                const colors = [
+                    'bg-primary',
+                    'bg-blue-500',
+                    'bg-green-500',
+                    'bg-orange-500',
+                    'bg-purple-500',
+                    'bg-pink-500',
+                    'bg-indigo-500'
+                ];
+
+                const finalDeptList = sortedDepts.map((item, index) => ({
+                    name: item.name,
+                    count: item.count,
+                    color: colors[index % colors.length]
                 }));
-                setDepartmentStats(deptList);
+
+                setDepartmentStats(finalDeptList);
 
                 // Attendance Calculation
                 const today = new Date().toISOString().split('T')[0];

@@ -72,7 +72,7 @@ export default function DashboardLayout({
                         <div className="bg-primary p-2 rounded-xl shadow-lg shadow-primary/20 transition-transform group-hover:scale-105">
                             <Users className="h-6 w-6 text-white" />
                         </div>
-                        <span className="text-xl font-bold tracking-tight text-foreground hidden sm:block">URNI</span>
+                        <span className="text-xl font-bold tracking-tight text-foreground hidden sm:block">TBG</span>
                     </Link>
 
                     {/* Desktop Navigation */}
@@ -136,7 +136,10 @@ export default function DashboardLayout({
                             </button>
 
                             {/* Mobile menu button */}
-                            <button className="lg:hidden p-2.5 rounded-xl text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800">
+                            <button
+                                onClick={() => setSidebarOpen(true)}
+                                className="lg:hidden p-2.5 rounded-xl text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800"
+                            >
                                 <Menu className="h-6 w-6" />
                             </button>
                         </div>
@@ -148,6 +151,73 @@ export default function DashboardLayout({
             <main className="mx-auto max-w-(--breakpoint-2xl) p-6 lg:p-8">
                 {children}
             </main>
+            {/* Mobile Sidebar Overlay */}
+            {sidebarOpen && (
+                <div className="fixed inset-0 z-[100] lg:hidden font-sans">
+                    {/* Backdrop */}
+                    <div
+                        className="fixed inset-0 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
+                        onClick={() => setSidebarOpen(false)}
+                    />
+
+                    {/* Drawer */}
+                    <div className="fixed inset-y-0 right-0 w-full max-w-xs bg-white dark:bg-zinc-900 shadow-2xl p-6 flex flex-col gap-8 animate-in slide-in-from-right duration-300">
+                        <div className="flex items-center justify-between">
+                            <span className="text-xl font-bold tracking-tight text-foreground">Menu</span>
+                            <button
+                                onClick={() => setSidebarOpen(false)}
+                                className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors"
+                            >
+                                <X className="h-6 w-6 text-gray-500" />
+                            </button>
+                        </div>
+
+                        {/* Mobile Nav Links */}
+                        <div className="flex-1 space-y-2">
+                            {navigation.map((item) => {
+                                const isActive = pathname === item.href;
+                                return (
+                                    <Link
+                                        key={item.name}
+                                        href={item.href}
+                                        onClick={() => setSidebarOpen(false)}
+                                        className={cn(
+                                            "flex items-center gap-4 px-4 py-3 text-base font-semibold rounded-2xl transition-all duration-200",
+                                            isActive
+                                                ? "text-white bg-primary shadow-lg shadow-primary/20"
+                                                : "text-gray-500 hover:text-foreground hover:bg-gray-100 dark:hover:bg-zinc-800"
+                                        )}
+                                    >
+                                        <item.icon className={cn("h-5 w-5", isActive ? "text-white" : "text-gray-400 group-hover:text-primary")} />
+                                        {item.name}
+                                    </Link>
+                                );
+                            })}
+                        </div>
+
+                        {/* Mobile User Profile */}
+                        <div className="border-t border-gray-100 dark:border-zinc-800 pt-6">
+                            <div className="flex items-center gap-4 mb-6">
+                                <div className="h-12 w-12 rounded-full bg-gray-100 dark:bg-zinc-800 flex items-center justify-center overflow-hidden border border-gray-200 dark:border-zinc-700">
+                                    {user?.name?.[0] || <UserIcon className="h-6 w-6 text-gray-400" />}
+                                </div>
+                                <div>
+                                    <p className="text-sm font-bold text-foreground">{user?.name || 'Administrator'}</p>
+                                    <p className="text-xs text-gray-400 font-medium">{user?.role || 'Staff Management'}</p>
+                                </div>
+                            </div>
+
+                            <button
+                                onClick={handleLogout}
+                                className="w-full flex items-center justify-center gap-2 p-3 rounded-2xl bg-red-50 text-red-600 font-bold hover:bg-red-100 transition-colors"
+                            >
+                                <LogOut className="h-5 w-5" />
+                                Log Out
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

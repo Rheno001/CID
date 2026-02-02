@@ -2,9 +2,11 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Staff } from '@/app/types';
+import { Staff, Role, Department } from '@/app/types';
 import { cn } from '@/lib/utils';
-import { Loader2 } from 'lucide-react';
+import { lookupApi, staffApi } from '@/lib/api';
+import { Loader2, User, Mail, Briefcase, Building, Phone, ShieldCheck, MessageSquare } from 'lucide-react';
+import { useEffect } from 'react';
 
 interface StaffFormProps {
     initialData?: Staff;
@@ -15,14 +17,55 @@ export default function StaffForm({ initialData, isEdit = false }: StaffFormProp
     const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [roles, setRoles] = useState<Role[]>([]);
+    const [departments, setDepartments] = useState<Department[]>([]);
     const [formData, setFormData] = useState<Partial<Staff>>({
         name: initialData?.name || '',
         email: initialData?.email || '',
         role: initialData?.role || '',
-        department: initialData?.department || '',
+        department_id: (typeof initialData?.department === 'object' && initialData.department !== null) ? (initialData.department as any)._id : '',
         phone: initialData?.phone || '',
-        status: initialData?.status || 'active',
+        password: '',
     });
+
+    useEffect(() => {
+        const fetchLookups = async () => {
+            try {
+                const [rolesData, departmentsData] = await Promise.all([
+                    lookupApi.getRoles(),
+                    lookupApi.getDepartments()
+                ]);
+
+                // Normalize roles
+                const rawRoles = Array.isArray(rolesData) ? rolesData : (rolesData as any).data || (rolesData as any).roles || [];
+                const normalizedRoles = rawRoles.map((r: any, idx: number) => {
+                    if (typeof r === 'string') return { _id: r, name: r };
+                    return {
+                        _id: r._id || r.id || `role-${r.name || idx}`,
+                        name: r.name || String(r)
+                    };
+                });
+                setRoles(normalizedRoles);
+
+                // Normalize departments
+                const rawDepts = Array.isArray(departmentsData) ? departmentsData : (departmentsData as any).data || (departmentsData as any).departments || [];
+                const normalizedDepts = rawDepts.map((d: any, idx: number) => {
+                    if (typeof d === 'string') return { _id: d, name: d };
+                    return {
+                        _id: d._id || d.id || `dept-${d.name || idx}`,
+                        name: d.name || String(d)
+                    };
+                });
+                setDepartments(normalizedDepts);
+
+            } catch (err) {
+                console.error('Failed to fetch roles or departments:', err);
+                // Keep default empty if fetch fails
+            }
+        };
+
+        fetchLookups();
+    }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -30,13 +73,25 @@ export default function StaffForm({ initialData, isEdit = false }: StaffFormProp
         setError('');
 
         try {
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            const staffId = initialData?._id || initialData?.id;
+
+            // Transform data for the register endpoint
+            const payload = {
+                ...formData,
+                department_id: formData.department_id,
+            };
+
+            if (isEdit && staffId) {
+                await staffApi.update(staffId, payload);
+            } else {
+                await staffApi.create(payload);
+            }
 
             router.push('/dashboard/staff');
             router.refresh();
         } catch (error) {
-            setError('Failed to save staff member.');
+            console.error('Failed to save staff:', error);
+            setError('Failed to save staff member. Please ensure all fields are correct.');
         } finally {
             setLoading(false);
         }
@@ -47,134 +102,155 @@ export default function StaffForm({ initialData, isEdit = false }: StaffFormProp
     };
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl bg-white p-6 rounded-lg shadow dark:bg-zinc-800">
-            <div className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-6">
-                <div className="sm:col-span-4">
-                    <label htmlFor="name" className="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-100">
-                        Full Name
-                    </label>
-                    <div className="mt-2">
-                        <input
-                            type="text"
-                            name="name"
-                            id="name"
-                            required
-                            value={formData.name}
-                            onChange={handleChange}
-                            className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 dark:bg-zinc-700 dark:text-white dark:ring-zinc-600 sm:text-sm sm:leading-6"
-                        />
+        <form onSubmit={handleSubmit} className="space-y-8 max-w-2xl bg-white dark:bg-zinc-900 p-10 rounded-4xl border border-gray-100 dark:border-zinc-800 shadow-sm animate-in fade-in duration-700">
+            <div className="space-y-8">
+                <div>
+                    <h3 className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-6 flex items-center gap-2">
+                        <User className="h-3 w-3" /> Profile Information
+                    </h3>
+                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                        <div className="sm:col-span-2">
+                            <label htmlFor="name" className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 block ml-1">Legal Full Name</label>
+                            <input
+                                type="text"
+                                name="name"
+                                id="name"
+                                required
+                                value={formData.name}
+                                onChange={handleChange}
+                                placeholder="e.g. John Doe"
+                                className="block w-full rounded-2xl border-0 py-3.5 px-4 text-sm font-bold text-foreground bg-gray-50/50 dark:bg-zinc-800 ring-1 ring-inset ring-gray-100 dark:ring-zinc-700 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                            />
+                        </div>
+
+                        <div className="sm:col-span-2">
+                            <label htmlFor="email" className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 block ml-1">Primary Email Address</label>
+                            <input
+                                id="email"
+                                name="email"
+                                type="email"
+                                required
+                                value={formData.email}
+                                onChange={handleChange}
+                                placeholder="john@example.com"
+                                className="block w-full rounded-2xl border-0 py-3.5 px-4 text-sm font-bold text-foreground bg-gray-50/50 dark:bg-zinc-800 ring-1 ring-inset ring-gray-100 dark:ring-zinc-700 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                            />
+                        </div>
+
+                        {!isEdit && (
+                            <div className="sm:col-span-2">
+                                <label htmlFor="password" className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 block ml-1">Password</label>
+                                <input
+                                    id="password"
+                                    name="password"
+                                    type="password"
+                                    required={!isEdit}
+                                    value={formData.password}
+                                    onChange={handleChange}
+                                    placeholder="••••••••"
+                                    className="block w-full rounded-2xl border-0 py-3.5 px-4 text-sm font-bold text-foreground bg-gray-50/50 dark:bg-zinc-800 ring-1 ring-inset ring-gray-100 dark:ring-zinc-700 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                />
+                            </div>
+                        )}
                     </div>
                 </div>
 
-                <div className="sm:col-span-4">
-                    <label htmlFor="email" className="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-100">
-                        Email address
-                    </label>
-                    <div className="mt-2">
-                        <input
-                            id="email"
-                            name="email"
-                            type="email"
-                            required
-                            value={formData.email}
-                            onChange={handleChange}
-                            className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 dark:bg-zinc-700 dark:text-white dark:ring-zinc-600 sm:text-sm sm:leading-6"
-                        />
-                    </div>
-                </div>
+                <div>
+                    <h3 className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-6 flex items-center gap-2">
+                        <Briefcase className="h-3 w-3" /> Organizational Details
+                    </h3>
+                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                        <div>
+                            <label htmlFor="role" className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 block ml-1">Position / Job Title</label>
+                            <select
+                                id="role"
+                                name="role"
+                                required
+                                value={formData.role}
+                                onChange={handleChange}
+                                className="block w-full rounded-2xl border-0 py-3.5 px-4 text-sm font-bold text-foreground bg-gray-50/50 dark:bg-zinc-800 ring-1 ring-inset ring-gray-100 dark:ring-zinc-700 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                            >
+                                <option key="role-placeholder" value="" disabled>Select Role</option>
+                                {roles.length > 0 ? (
+                                    roles.map(r => (
+                                        <option key={r._id} value={r.name}>{r.name}</option>
+                                    ))
+                                ) : (
+                                    <option key="role-loading" value={formData.role}>{formData.role || 'Loading roles...'}</option>
+                                )}
+                            </select>
+                        </div>
 
-                <div className="sm:col-span-3">
-                    <label htmlFor="role" className="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-100">
-                        Role
-                    </label>
-                    <div className="mt-2">
-                        <input
-                            type="text"
-                            name="role"
-                            id="role"
-                            required
-                            value={formData.role}
-                            onChange={handleChange}
-                            className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 dark:bg-zinc-700 dark:text-white dark:ring-zinc-600 sm:text-sm sm:leading-6"
-                        />
-                    </div>
-                </div>
+                        <div className="sm:col-span-2">
+                            <label htmlFor="department_id" className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 block ml-1">Assigned Department</label>
+                            <select
+                                id="department_id"
+                                name="department_id"
+                                required
+                                value={formData.department_id}
+                                onChange={handleChange}
+                                className="block w-full rounded-2xl border-0 py-3.5 px-4 text-sm font-bold text-foreground bg-gray-50/50 dark:bg-zinc-800 ring-1 ring-inset ring-gray-100 dark:ring-zinc-700 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                            >
+                                <option key="dept-placeholder" value="" disabled>Select Department</option>
+                                {departments.length > 0 ? (
+                                    departments.map(d => (
+                                        <option key={d._id} value={d._id}>{d.name}</option>
+                                    ))
+                                ) : (
+                                    <option key="dept-loading" value="">Loading departments...</option>
+                                )}
+                            </select>
+                        </div>
 
-                <div className="sm:col-span-3">
-                    <label htmlFor="department" className="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-100">
-                        Department
-                    </label>
-                    <div className="mt-2">
-                        <input
-                            type="text"
-                            name="department"
-                            id="department"
-                            required
-                            value={formData.department}
-                            onChange={handleChange}
-                            className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 dark:bg-zinc-700 dark:text-white dark:ring-zinc-600 sm:text-sm sm:leading-6"
-                        />
-                    </div>
-                </div>
-
-                <div className="sm:col-span-3">
-                    <label htmlFor="phone" className="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-100">
-                        Phone
-                    </label>
-                    <div className="mt-2">
-                        <input
-                            type="tel"
-                            name="phone"
-                            id="phone"
-                            value={formData.phone}
-                            onChange={handleChange}
-                            className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 dark:bg-zinc-700 dark:text-white dark:ring-zinc-600 sm:text-sm sm:leading-6"
-                        />
-                    </div>
-                </div>
-
-                <div className="sm:col-span-3">
-                    <label htmlFor="status" className="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-100">
-                        Status
-                    </label>
-                    <div className="mt-2">
-                        <select
-                            id="status"
-                            name="status"
-                            value={formData.status}
-                            onChange={handleChange}
-                            className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 dark:bg-zinc-700 dark:text-white dark:ring-zinc-600 sm:max-w-xs sm:text-sm sm:leading-6"
-                        >
-                            <option value="active">Active</option>
-                            <option value="inactive">Inactive</option>
-                        </select>
+                        <div className="sm:col-span-2">
+                            <label htmlFor="phone" className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 block ml-1">Contact Phone</label>
+                            <input
+                                type="tel"
+                                name="phone"
+                                id="phone"
+                                value={formData.phone}
+                                onChange={handleChange}
+                                placeholder="+234 ..."
+                                className="block w-full rounded-2xl border-0 py-3.5 px-4 text-sm font-bold text-foreground bg-gray-50/50 dark:bg-zinc-800 ring-1 ring-inset ring-gray-100 dark:ring-zinc-700 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                            />
+                        </div>
                     </div>
                 </div>
             </div>
 
+            <div className="bg-gray-50 dark:bg-zinc-800/50 p-6 rounded-3xl border border-gray-100 dark:border-zinc-800 flex items-start gap-4">
+                <div className="h-10 w-10 rounded-2xl bg-white dark:bg-zinc-800 shadow-sm flex items-center justify-center text-primary shrink-0">
+                    <MessageSquare className="h-5 w-5" />
+                </div>
+                <div className="space-y-1">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Notice</p>
+                    <p className="text-xs text-gray-500 font-bold leading-relaxed">Updates to staff profiles are permanent and logged for auditing purposes. Ensure information is accurate before submission.</p>
+                </div>
+            </div>
+
             {error && (
-                <div className="rounded-md bg-red-50 p-4 text-sm text-red-700 dark:bg-red-900/30 dark:text-red-400">
+                <div className="rounded-2xl bg-red-50 p-4 text-xs font-bold text-red-600 border border-red-100 dark:bg-red-900/10 dark:text-red-400 dark:border-red-900/20">
                     {error}
                 </div>
             )}
 
-            <div className="flex justify-end gap-x-3">
+            <div className="flex items-center justify-end gap-6 pt-4">
                 <button
                     type="button"
                     onClick={() => router.back()}
-                    className="rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-zinc-800 dark:text-gray-200 dark:ring-zinc-700 dark:hover:bg-zinc-700"
+                    className="text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-foreground transition-colors"
                 >
                     Cancel
                 </button>
                 <button
                     type="submit"
                     disabled={loading}
-                    className="rounded-md bg-orange-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-orange-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600 disabled:opacity-50"
+                    className="rounded-2xl bg-primary px-8 py-4 text-[10px] font-black uppercase tracking-widest text-white shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 flex items-center gap-2"
                 >
                     {loading ? (
-                        <Loader2 className="h-8 w-8 animate-spin text-orange-600" />
+                        <Loader2 className="h-5 w-5 animate-spin" />
                     ) : (
-                        isEdit ? 'Update Staff' : 'Create Staff'
+                        isEdit ? 'Update Staff Profile' : 'Register New Staff Member'
                     )}
                 </button>
             </div>

@@ -39,8 +39,8 @@ export default function StaffPage() {
     }, []);
 
 
-    const handleDelete = async (staffId: string) => {
-        if (!confirm('Are you sure you want to delete this staff member?')) return;
+    const handleDelete = (staffId: string) => {
+        if (!confirm('Are you sure you want to delete this staff member? (Local UI only, pending backend support)')) return;
         if (!Array.isArray(staff)) return;
         setStaff(staff.filter((s) => (s._id || s.id) !== staffId));
     };

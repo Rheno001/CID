@@ -13,9 +13,22 @@ export interface Staff {
     email: string;
     role: string;
     department: string;
+    department_id?: string;
+    branch_id?: string;
+    password?: string;
     phone?: string;
     status: 'active' | 'inactive';
     createdAt?: string;
+}
+
+export interface Role {
+    _id: string;
+    name: string;
+}
+
+export interface Department {
+    _id: string;
+    name: string;
 }
 
 export interface AuthResponse {
