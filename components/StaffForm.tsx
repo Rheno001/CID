@@ -2,10 +2,10 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Staff, Role, Department } from '@/app/types';
+import { Staff, Role, Department, Branch } from '@/app/types';
 import { cn } from '@/lib/utils';
-import { lookupApi, staffApi } from '@/lib/api';
-import { Loader2, User, Mail, Briefcase, Building, Phone, ShieldCheck, MessageSquare } from 'lucide-react';
+import { lookupApi, staffApi, branchApi } from '@/lib/api';
+import { Loader2, User, Mail, Briefcase, Building, Phone, Calendar, MapPin, Camera, MessageSquare } from 'lucide-react';
 import { useEffect } from 'react';
 
 interface StaffFormProps {
@@ -19,21 +19,28 @@ export default function StaffForm({ initialData, isEdit = false }: StaffFormProp
     const [error, setError] = useState('');
     const [roles, setRoles] = useState<Role[]>([]);
     const [departments, setDepartments] = useState<Department[]>([]);
+    const [branches, setBranches] = useState<Branch[]>([]);
     const [formData, setFormData] = useState<Partial<Staff>>({
         name: initialData?.name || '',
         email: initialData?.email || '',
         role: initialData?.role || '',
         department_id: (typeof initialData?.department === 'object' && initialData.department !== null) ? (initialData.department as any)._id : '',
+        branch_id: initialData?.branch_id || '',
         phone: initialData?.phone || '',
+        dob: initialData?.dob || '',
+        address: initialData?.address || '',
+        profile_picture: initialData?.profile_picture || '',
+        reports_to: initialData?.reports_to || 'ME_QC',
         password: '',
     });
 
     useEffect(() => {
         const fetchLookups = async () => {
             try {
-                const [rolesData, departmentsData] = await Promise.all([
+                const [rolesData, departmentsData, branchesData] = await Promise.all([
                     lookupApi.getRoles(),
-                    lookupApi.getDepartments()
+                    lookupApi.getDepartments(),
+                    branchApi.getAll()
                 ]);
 
                 // Normalize roles
@@ -58,9 +65,10 @@ export default function StaffForm({ initialData, isEdit = false }: StaffFormProp
                 });
                 setDepartments(normalizedDepts);
 
+                setBranches(branchesData);
+
             } catch (err) {
-                console.error('Failed to fetch roles or departments:', err);
-                // Keep default empty if fetch fails
+                console.error('Failed to fetch lookup data:', err);
             }
         };
 
@@ -97,8 +105,19 @@ export default function StaffForm({ initialData, isEdit = false }: StaffFormProp
         }
     };
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setFormData({ ...formData, profile_picture: reader.result as string });
+            };
+            reader.readAsDataURL(file);
+        }
     };
 
     return (
@@ -137,9 +156,59 @@ export default function StaffForm({ initialData, isEdit = false }: StaffFormProp
                             />
                         </div>
 
+                        <div className="sm:col-span-2">
+                            <label htmlFor="dob" className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 block ml-1">Date of Birth</label>
+                            <input
+                                id="dob"
+                                name="dob"
+                                type="date"
+                                value={formData.dob}
+                                onChange={handleChange}
+                                className="block w-full rounded-2xl border-0 py-3.5 px-4 text-sm font-bold text-foreground bg-gray-50/50 dark:bg-zinc-800 ring-1 ring-inset ring-gray-100 dark:ring-zinc-700 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                            />
+                        </div>
+
+                        <div className="sm:col-span-2">
+                            <label htmlFor="address" className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 block ml-1">Legal Address</label>
+                            <textarea
+                                id="address"
+                                name="address"
+                                rows={3}
+                                value={formData.address}
+                                onChange={handleChange}
+                                placeholder="Enter full residential address"
+                                className="block w-full rounded-2xl border-0 py-3.5 px-4 text-sm font-bold text-foreground bg-gray-50/50 dark:bg-zinc-800 ring-1 ring-inset ring-gray-100 dark:ring-zinc-700 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all resize-none"
+                            />
+                        </div>
+
+                        <div className="sm:col-span-2">
+                            <label htmlFor="profile_picture" className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 block ml-1">Profile Picture</label>
+                            <div className="flex items-center gap-4">
+                                {formData.profile_picture ? (
+                                    <img
+                                        src={formData.profile_picture}
+                                        alt="Preview"
+                                        className="h-16 w-16 rounded-2xl object-cover ring-2 ring-primary/20"
+                                    />
+                                ) : (
+                                    <div className="h-16 w-16 rounded-2xl bg-gray-100 dark:bg-zinc-800 flex items-center justify-center text-gray-400">
+                                        <Camera className="h-6 w-6" />
+                                    </div>
+                                )}
+                                <input
+                                    id="profile_picture"
+                                    name="profile_picture"
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleFileChange}
+                                    className="block w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-[10px] file:font-black file:uppercase file:tracking-widest file:bg-primary file:text-white hover:file:bg-primary/90 transition-all"
+                                />
+                            </div>
+                        </div>
+
                         {!isEdit && (
                             <div className="sm:col-span-2">
-                                <label htmlFor="password" className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 block ml-1">Password</label>
+                                <label htmlFor="password" className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 block ml-1">Account Password</label>
                                 <input
                                     id="password"
                                     name="password"
@@ -177,6 +246,27 @@ export default function StaffForm({ initialData, isEdit = false }: StaffFormProp
                                     ))
                                 ) : (
                                     <option key="role-loading" value={formData.role}>{formData.role || 'Loading roles...'}</option>
+                                )}
+                            </select>
+                        </div>
+
+                        <div className="sm:col-span-2">
+                            <label htmlFor="branch_id" className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 block ml-1">Assigned Branch</label>
+                            <select
+                                id="branch_id"
+                                name="branch_id"
+                                required
+                                value={formData.branch_id}
+                                onChange={handleChange}
+                                className="block w-full rounded-2xl border-0 py-3.5 px-4 text-sm font-bold text-foreground bg-gray-50/50 dark:bg-zinc-800 ring-1 ring-inset ring-gray-100 dark:ring-zinc-700 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                            >
+                                <option key="branch-placeholder" value="" disabled>Select Branch</option>
+                                {branches.length > 0 ? (
+                                    branches.map(b => (
+                                        <option key={b._id} value={b._id}>{b.name}</option>
+                                    ))
+                                ) : (
+                                    <option key="branch-loading" value="">Loading branches...</option>
                                 )}
                             </select>
                         </div>

@@ -17,6 +17,10 @@ export interface Staff {
     branch_id?: string;
     password?: string;
     phone?: string;
+    dob?: string;
+    profile_picture?: string;
+    address?: string;
+    reports_to?: string;
     status: 'active' | 'inactive';
     createdAt?: string;
 }

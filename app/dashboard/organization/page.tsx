@@ -19,7 +19,6 @@ export default function OrganizationPage() {
 
     // Department Form State
     const [selectedCompanyIdForDepartment, setSelectedCompanyIdForDepartment] = useState('');
-    const [selectedBranchId, setSelectedBranchId] = useState('');
     const [departmentNames, setDepartmentNames] = useState<string[]>(['']);
 
     // Branch Form State
@@ -90,11 +89,6 @@ export default function OrganizationPage() {
             return;
         }
 
-        if (!selectedBranchId) {
-            alert('Please select a branch');
-            return;
-        }
-
         const validNames = departmentNames.filter(name => name.trim() !== '');
         if (validNames.length === 0) {
             alert('Please enter at least one department name');
@@ -107,7 +101,6 @@ export default function OrganizationPage() {
             await Promise.all(validNames.map(name =>
                 departmentApi.create({
                     name: name,
-                    branch_id: selectedBranchId,
                     company_id: selectedCompanyIdForDepartment
                 })
             ));
@@ -242,7 +235,6 @@ export default function OrganizationPage() {
                                 value={selectedCompanyIdForDepartment}
                                 onChange={(e) => {
                                     setSelectedCompanyIdForDepartment(e.target.value);
-                                    setSelectedBranchId(''); // Reset branch when company changes
                                 }}
                                 required
                                 className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary dark:bg-zinc-800 dark:border-zinc-700 sm:text-sm p-2 border"
@@ -256,25 +248,6 @@ export default function OrganizationPage() {
                             </select>
                         </div>
 
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium">Select Branch</label>
-                            <select
-                                value={selectedBranchId}
-                                onChange={(e) => setSelectedBranchId(e.target.value)}
-                                required
-                                disabled={!selectedCompanyIdForDepartment}
-                                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary dark:bg-zinc-800 dark:border-zinc-700 sm:text-sm p-2 border disabled:opacity-50"
-                            >
-                                <option value="">Select a branch...</option>
-                                {branches
-                                    .filter(b => b.company_id === selectedCompanyIdForDepartment)
-                                    .map((branch) => (
-                                        <option key={branch._id || Math.random()} value={branch._id || branch.name}>
-                                            {branch.name}
-                                        </option>
-                                    ))}
-                            </select>
-                        </div>
 
                         <div className="space-y-3">
                             <label className="text-sm font-medium">Department Names</label>
