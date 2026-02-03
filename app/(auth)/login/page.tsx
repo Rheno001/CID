@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
+import TBGLogo from '@/assets/TBG.webp';
 import { authApi } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import { Loader2, Lock, Mail } from 'lucide-react';
@@ -44,6 +46,18 @@ export default function LoginPage() {
         <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 dark:bg-zinc-900 sm:px-6 lg:px-8">
             <div className="w-full max-w-md space-y-8">
                 <div className="text-center">
+                    <div className="flex flex-col items-center justify-center gap-2 mb-6">
+                        <div className="relative h-16 w-auto">
+                            <Image
+                                src={TBGLogo}
+                                alt="TBG Logo"
+                                height={64}
+                                width={192}
+                                className="h-16 w-auto object-contain"
+                                priority
+                            />
+                        </div>
+                    </div>
                     <h2 className="mt-6 text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-100">
                         Sign in to your account
                     </h2>

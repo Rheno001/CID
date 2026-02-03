@@ -26,9 +26,29 @@ export interface Role {
     name: string;
 }
 
+
 export interface Department {
     _id: string;
     name: string;
+    company_id?: string;
+    branch_id?: string;
+}
+
+export interface Company {
+    _id: string;
+    name: string;
+    // Add other fields as discovered or needed given "devongnosis, reachout and tbs" context, assuming simple name for now
+}
+
+export interface Branch {
+    _id: string;
+    name: string;
+    address: string;
+    location_city: string;
+    gps_lat: number;
+    gps_long: number;
+    radius_meters: string;
+    company_id?: string;
 }
 
 export interface AuthResponse {

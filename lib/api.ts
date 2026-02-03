@@ -1,5 +1,6 @@
 import axios from 'axios';
-import { AuthResponse, Staff, Ticket, Role, Department } from '@/app/types';
+
+import { AuthResponse, Staff, Ticket, Role, Department, Company, Branch } from '@/app/types';
 
 const API_URL = 'https://urni-project-backend-44bx.onrender.com';
 
@@ -189,6 +190,92 @@ export const departmentApi = {
     getById: async (id: string): Promise<any> => {
         try {
             const response = await api.get(`api/departments/${id}`);
+            return response.data;
+        } catch (e) {
+            throw e;
+        }
+    },
+    create: async (departmentData: Partial<Department>): Promise<any> => {
+        try {
+            const response = await api.post('api/departments', departmentData);
+            return response.data;
+        } catch (e) {
+            throw e;
+        }
+    },
+    getAll: async (): Promise<Department[]> => {
+        try {
+            const response = await api.get('api/departments');
+            const data = response.data;
+            if (Array.isArray(data)) {
+                return data;
+            } else if (data && typeof data === 'object' && Array.isArray((data as any).data)) {
+                return (data as any).data;
+            } else if (data && typeof data === 'object' && Array.isArray((data as any).departments)) {
+                return (data as any).departments;
+            }
+            return [];
+        } catch (e) {
+            throw e;
+        }
+    }
+};
+
+export const companyApi = {
+    create: async (companyData: Partial<Company>): Promise<any> => {
+        try {
+            const response = await api.post('api/companies', companyData);
+            return response.data;
+        } catch (e) {
+            throw e;
+        }
+    },
+    getAll: async (): Promise<Company[]> => {
+        try {
+            const response = await api.get('api/companies');
+            const data = response.data;
+            if (Array.isArray(data)) {
+                return data;
+            } else if (data && typeof data === 'object' && Array.isArray((data as any).data)) {
+                return (data as any).data;
+            } else if (data && typeof data === 'object' && Array.isArray((data as any).companies)) {
+                return (data as any).companies;
+            }
+            return [];
+        } catch (e) {
+            throw e;
+        }
+    }
+};
+
+export const branchApi = {
+    create: async (branchData: Partial<Branch>): Promise<any> => {
+        try {
+            const response = await api.post('api/branches', branchData);
+            return response.data;
+        } catch (e) {
+            throw e;
+        }
+    },
+    getAll: async (): Promise<Branch[]> => {
+        try {
+            const response = await api.get('api/branches');
+            const data = response.data;
+            if (Array.isArray(data)) {
+                return data;
+            } else if (data && typeof data === 'object' && Array.isArray((data as any).data)) {
+                return (data as any).data;
+            } else if (data && typeof data === 'object' && Array.isArray((data as any).branches)) {
+                return (data as any).branches;
+            }
+            return [];
+        } catch (e) {
+            throw e;
+        }
+    },
+    getById: async (id: string): Promise<Branch> => {
+        try {
+            const response = await api.get(`api/branches/${id}`);
             return response.data;
         } catch (e) {
             throw e;

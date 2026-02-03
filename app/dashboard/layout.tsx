@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import {
@@ -12,7 +13,9 @@ import {
     X,
     User as UserIcon,
     Ticket,
+    Building2,
 } from 'lucide-react';
+import TBGLogo from '@/assets/TBG.webp';
 import { User } from '@/app/types';
 import { ThemeToggle } from '@/components/ThemeToggle';
 
@@ -51,6 +54,7 @@ export default function DashboardLayout({
 
     const navigation = [
         { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+        { name: 'Organization', href: '/dashboard/organization', icon: Building2 },
         { name: 'Staff Management', href: '/dashboard/staff', icon: Users },
         { name: 'Tickets', href: '/dashboard/tickets', icon: Ticket },
         { name: 'Profile', href: '/dashboard/profile', icon: UserIcon },
@@ -69,10 +73,16 @@ export default function DashboardLayout({
                 <div className="mx-auto max-w-(--breakpoint-2xl) flex items-center justify-between gap-8">
                     {/* Logo */}
                     <Link href="/dashboard" className="flex items-center gap-2 group">
-                        <div className="bg-primary p-2 rounded-xl shadow-lg shadow-primary/20 transition-transform group-hover:scale-105">
-                            <Users className="h-6 w-6 text-white" />
+                        <div className="relative h-10 w-auto">
+                            <Image
+                                src={TBGLogo}
+                                alt="TBG Logo"
+                                height={40}
+                                width={120} // Approximate width, it will maintain aspect ratio due to height and style="auto" usually, strictly explicit width/height helps avoid CLS.
+                                className="h-10 w-auto object-contain transition-transform group-hover:scale-105"
+                                priority
+                            />
                         </div>
-                        <span className="text-xl font-bold tracking-tight text-foreground hidden sm:block">TBG</span>
                     </Link>
 
                     {/* Desktop Navigation */}
