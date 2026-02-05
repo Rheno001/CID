@@ -9,20 +9,29 @@ export interface User {
 export interface Staff {
     _id: string;
     id?: string;
+    staff_id?: string; // Auto-generated
     name: string;
     email: string;
     role: string;
     department: string;
-    department_id?: string;
-    branch_id?: string;
+    department_id?: string | null;
+    company_id?: string | null;
+    branch_id?: string | null;
     password?: string;
     phone?: string;
     dob?: string;
     profile_picture?: string;
+    profile_pic_url?: string | null; // API field name
     address?: string;
     reports_to?: string;
+    reports_to_id?: string | null; // API field name
     status: 'active' | 'inactive';
+    is_active?: boolean;
+    leave_balance?: number; // Default: 20
+    stats_score?: number; // Default: 100
     createdAt?: string;
+    created_at?: string; // API field name
+    updated_at?: string; // API field name
 }
 
 export interface Role {
@@ -33,15 +42,19 @@ export interface Role {
 
 export interface Department {
     _id: string;
+    id?: string;
     name: string;
     company_id?: string;
     branch_id?: string;
+    head_id?: string | null;
 }
 
 export interface Company {
     _id: string;
     name: string;
-    // Add other fields as discovered or needed given "devongnosis, reachout and tbs" context, assuming simple name for now
+    logo?: string;
+    abbreviation?: string;
+    address?: string;
 }
 
 export interface Branch {

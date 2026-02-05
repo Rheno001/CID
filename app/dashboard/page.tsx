@@ -53,47 +53,35 @@ export default function DashboardPage() {
                     (ticketsData as any).data || (ticketsData as any).tickets || [];
                 setLatestTickets(allTickets.slice(-3).reverse());
 
-                // Department Breakdown: Specific API Calls per Department
-                console.log('Fetching detailed department stats via /api/departments/{id} for:', allDepartments.length, 'departments');
-                const deptStatsPromises = allDepartments.map(async (dept: any) => {
+                // Department Breakdown: Calculate locally from allStaff for speed and reliability
+                console.log('Calculating department stats locally from', allStaff.length, 'staff members');
+
+                const stats = allDepartments.map((dept: any) => {
                     const deptId = dept._id || dept.id;
-                    if (!deptId) return { name: dept.name, count: 0, id: 'unknown' };
+                    const deptName = dept.name;
 
-                    try {
-                        const deptDetails = await departmentApi.getById(deptId);
-                        // Handle various possible response structures for users list
-                        let count = 0;
-                        if (deptDetails) {
-                            if (Array.isArray(deptDetails.users)) count = deptDetails.users.length;
-                            else if (Array.isArray(deptDetails.employees)) count = deptDetails.employees.length;
-                            else if (Array.isArray(deptDetails.staff)) count = deptDetails.staff.length;
-                            // Fallback: check if the response itself is an array (unlikely for getById but possible)
-                            else if (Array.isArray(deptDetails)) count = deptDetails.length;
-                            // Check for wrapped data object
-                            else if (deptDetails.data && Array.isArray(deptDetails.data)) count = deptDetails.data.length;
-                            else if (deptDetails.data && Array.isArray(deptDetails.data.users)) count = deptDetails.data.users.length;
-                        }
+                    // Filter staff that belong to this department
+                    const count = allStaff.filter((s: any) => {
+                        const sDeptId = s.department_id ||
+                            (typeof s.department === 'object' && s.department ? (s.department as any)._id || (s.department as any).id : null);
+                        const sDeptString = typeof s.department === 'string' ? s.department : '';
 
-                        console.log(`Staff count for ${dept.name} (${deptId}):`, count);
-                        return {
-                            name: dept.name,
-                            count: count,
-                            id: deptId
-                        };
-                    } catch (err) {
-                        console.error(`Error fetching details for ${dept.name}:`, err);
-                        return { name: dept.name, count: 0, id: deptId };
-                    }
+                        return sDeptId === deptId || sDeptString === deptName || sDeptString === deptId;
+                    }).length;
+
+                    return {
+                        name: deptName,
+                        count: count,
+                        id: deptId
+                    };
                 });
 
-                const fetchedDeptStats = await Promise.all(deptStatsPromises);
-                console.log('Final Department Stats:', fetchedDeptStats);
+                console.log('Final Department Stats (local calculation):', stats);
 
-                // Sort by count descending
-                const sortedDepts = fetchedDeptStats
-                    .filter(d => d.count > 0 || true) // Keep all for now to see if 0s are the issue
-                    .sort((a, b) => b.count - a.count)
-                    .slice(0, 5); // Top 5
+                // Sort by count descending and take top 5
+                const sortedDepts = stats
+                    .sort((a: any, b: any) => b.count - a.count)
+                    .slice(0, 5);
 
                 // Color palette for dynamic assignment
                 const colors = [
@@ -106,7 +94,7 @@ export default function DashboardPage() {
                     'bg-indigo-500'
                 ];
 
-                const finalDeptList = sortedDepts.map((item, index) => ({
+                const finalDeptList = sortedDepts.map((item: any, index: number) => ({
                     name: item.name,
                     count: item.count,
                     color: colors[index % colors.length]

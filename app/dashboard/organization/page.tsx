@@ -1,10 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Building2, MapPin, Briefcase, Loader2, Map, Plus, X } from 'lucide-react';
+import { Building2, MapPin, Briefcase, Loader2, Map, Plus, X, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { companyApi, departmentApi, branchApi } from '@/lib/api';
-import { Branch, Company } from '@/app/types';
+import { Branch, Company, Staff } from '@/app/types';
 
 export default function OrganizationPage() {
     const [activeTab, setActiveTab] = useState<'company' | 'department' | 'branch'>('company');
@@ -13,13 +13,21 @@ export default function OrganizationPage() {
     // Data state
     const [branches, setBranches] = useState<Branch[]>([]);
     const [companies, setCompanies] = useState<Company[]>([]);
+    const [companyEmployees, setCompanyEmployees] = useState<Staff[]>([]);
 
     // Forms state
-    const [companyName, setCompanyName] = useState('');
+    const [companyData, setCompanyData] = useState({
+        name: '',
+        address: '',
+        logo: null as File | null
+    });
 
     // Department Form State
-    const [selectedCompanyIdForDepartment, setSelectedCompanyIdForDepartment] = useState('');
-    const [departmentNames, setDepartmentNames] = useState<string[]>(['']);
+    const [departmentData, setDepartmentData] = useState({
+        name: '',
+        company_id: '',
+        head_id: ''
+    });
 
     // Branch Form State
     const [branchData, setBranchData] = useState({
@@ -41,20 +49,67 @@ export default function OrganizationPage() {
                 branchApi.getAll(),
                 companyApi.getAll()
             ]);
-            setBranches(branchesData);
-            setCompanies(companiesData);
+
+            // Normalize companies
+            const rawCompanies = Array.isArray(companiesData) ? companiesData : (companiesData as any).data || (companiesData as any).companies || [];
+            const normalizedCompanies = rawCompanies.map((c: any, idx: number) => ({
+                ...c,
+                _id: c._id || c.id || `company-${idx}`
+            }));
+
+            // Normalize branches
+            const rawBranches = Array.isArray(branchesData) ? branchesData : (branchesData as any).data || (branchesData as any).branches || [];
+            const normalizedBranches = rawBranches.map((b: any, idx: number) => ({
+                ...b,
+                _id: b._id || b.id || `branch-${idx}`
+            }));
+
+            setBranches(normalizedBranches);
+            setCompanies(normalizedCompanies);
         } catch (error) {
             console.error("Failed to fetch data", error);
         }
     };
 
+    // Fetch employees when company is selected
+    useEffect(() => {
+        const fetchCompanyEmployees = async () => {
+            if (departmentData.company_id) {
+                try {
+                    const employees = await companyApi.getEmployees(departmentData.company_id);
+                    // Normalize employees
+                    const rawEmployees = Array.isArray(employees) ? employees : (employees as any).data || (employees as any).employees || [];
+                    const normalizedEmployees = rawEmployees.map((e: any, idx: number) => ({
+                        ...e,
+                        _id: e._id || e.id || `emp-${idx}`
+                    }));
+                    setCompanyEmployees(normalizedEmployees);
+                } catch (error) {
+                    console.error('Failed to fetch company employees:', error);
+                    setCompanyEmployees([]);
+                }
+            } else {
+                setCompanyEmployees([]);
+            }
+        };
+
+        fetchCompanyEmployees();
+    }, [departmentData.company_id]);
+
     const handleCreateCompany = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
         try {
-            await companyApi.create({ name: companyName });
+            const formData = new FormData();
+            formData.append('name', companyData.name);
+            formData.append('address', companyData.address);
+            if (companyData.logo instanceof File) {
+                formData.append('logo', companyData.logo);
+            }
+
+            await companyApi.create(formData);
             alert('Company created successfully');
-            setCompanyName('');
+            setCompanyData({ name: '', address: '', logo: null });
             fetchData(); // Refresh data
         } catch (error) {
             console.error(error);
@@ -64,56 +119,46 @@ export default function OrganizationPage() {
         }
     };
 
-    const handleAddDepartmentInput = () => {
-        setDepartmentNames([...departmentNames, '']);
-    };
+    const handleDeleteCompany = async (id: string) => {
+        if (!window.confirm('Are you sure you want to delete this company? This action cannot be undone.')) {
+            return;
+        }
 
-    const handleDepartmentNameChange = (index: number, value: string) => {
-        const newNames = [...departmentNames];
-        newNames[index] = value;
-        setDepartmentNames(newNames);
-    };
-
-    const handleRemoveDepartmentInput = (index: number) => {
-        if (departmentNames.length > 1) {
-            const newNames = departmentNames.filter((_, i) => i !== index);
-            setDepartmentNames(newNames);
+        setLoading(true);
+        try {
+            await companyApi.delete(id);
+            alert('Company deleted successfully');
+            fetchData(); // Refresh list
+        } catch (error) {
+            console.error('Failed to delete company:', error);
+            alert('Failed to delete company. It may have associated departments or employees.');
+        } finally {
+            setLoading(false);
         }
     };
 
     const handleCreateDepartment = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (!selectedCompanyIdForDepartment) {
+        if (!departmentData.company_id) {
             alert('Please select a company');
-            return;
-        }
-
-        const validNames = departmentNames.filter(name => name.trim() !== '');
-        if (validNames.length === 0) {
-            alert('Please enter at least one department name');
             return;
         }
 
         setLoading(true);
         try {
-            // Create departments sequentially or in parallel
-            await Promise.all(validNames.map(name =>
-                departmentApi.create({
-                    name: name,
-                    company_id: selectedCompanyIdForDepartment
-                })
-            ));
+            await departmentApi.create({
+                name: departmentData.name,
+                company_id: departmentData.company_id,
+                head_id: departmentData.head_id || null
+            });
 
-            alert('Departments created successfully');
-            setDepartmentNames(['']);
-            // Keep selection or reset? Resetting specifically might be annoying if bulk creating for same branch,
-            // but requirements usually imply fresh start. Let's keep selection for convenience or reset?
-            // Let's reset for now to be safe.
-            // setSelectedBranchId('');
+            alert('Department created successfully');
+            setDepartmentData({ name: '', company_id: '', head_id: '' });
+            fetchData(); // Refresh data
         } catch (error) {
             console.error(error);
-            alert('Failed to create one or more departments');
+            alert('Failed to create department');
         } finally {
             setLoading(false);
         }
@@ -201,85 +246,148 @@ export default function OrganizationPage() {
 
             <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-xs dark:border-zinc-800 dark:bg-zinc-900">
                 {activeTab === 'company' && (
-                    <form onSubmit={handleCreateCompany} className="space-y-4 max-w-md">
-                        <h2 className="text-xl font-semibold">Create New Company</h2>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                        {/* Creation Form */}
+                        <form onSubmit={handleCreateCompany} className="space-y-4">
+                            <h2 className="text-xl font-semibold">Create New Company</h2>
+
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium">Company Name</label>
+                                <input
+                                    type="text"
+                                    placeholder="e.g. Acme Corp"
+                                    value={companyData.name}
+                                    onChange={(e) => setCompanyData({ ...companyData, name: e.target.value })}
+                                    required
+                                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary dark:bg-zinc-800 dark:border-zinc-700 sm:text-sm p-2 border"
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium">Company Logo</label>
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={(e) => setCompanyData({ ...companyData, logo: e.target.files?.[0] || null })}
+                                    className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-primary file:text-white hover:file:bg-primary/90 dark:text-gray-400"
+                                />
+                                <p className="text-xs text-muted-foreground">Upload a logo image for the company</p>
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium">Address</label>
+                                <input
+                                    type="text"
+                                    placeholder="e.g. 123 Business St, City"
+                                    value={companyData.address}
+                                    onChange={(e) => setCompanyData({ ...companyData, address: e.target.value })}
+                                    required
+                                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary dark:bg-zinc-800 dark:border-zinc-700 sm:text-sm p-2 border"
+                                />
+                            </div>
+
+                            <div className="rounded-md bg-blue-50 dark:bg-blue-900/20 p-3">
+                                <p className="text-xs text-blue-700 dark:text-blue-300">
+                                    <strong>Note:</strong> The company abbreviation will be automatically generated by the system.
+                                </p>
+                            </div>
+
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className="inline-flex w-full items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-50"
+                            >
+                                {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                                Create Company
+                            </button>
+                        </form>
+
+                        {/* Existing Companies List */}
+                        <div className="space-y-6">
+                            <h3 className="text-sm font-bold uppercase tracking-widest text-gray-400">Existing Companies</h3>
+                            <div className="grid gap-4">
+                                {companies.map((company, index) => (
+                                    <div key={company._id || `list-comp-${index}`} className="flex items-center justify-between p-4 rounded-2xl bg-gray-50 dark:bg-zinc-800/50 border border-transparent hover:border-gray-200 transition-all">
+                                        <div className="flex items-center gap-4">
+                                            <div className="h-10 w-10 rounded-xl bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 flex items-center justify-center text-primary font-black shadow-sm">
+                                                {company.name[0]}
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-bold text-foreground leading-none">{company.name}</p>
+                                                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1.5">{company.abbreviation || 'ID: ' + company._id.slice(0, 8)}</p>
+                                            </div>
+                                        </div>
+                                        <button
+                                            onClick={() => handleDeleteCompany(company._id)}
+                                            className="p-2 rounded-xl text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-all"
+                                            title="Delete Company"
+                                        >
+                                            <Trash2 className="h-4 w-4" />
+                                        </button>
+                                    </div>
+                                ))}
+                                {companies.length === 0 && (
+                                    <p className="text-sm text-gray-400 italic py-4 text-center">No companies found.</p>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {activeTab === 'department' && (
+                    <form onSubmit={handleCreateDepartment} className="space-y-4 max-w-md">
+                        <h2 className="text-xl font-semibold">Create New Department</h2>
+
                         <div className="space-y-2">
-                            <label className="text-sm font-medium">Company Name</label>
+                            <label className="text-sm font-medium">Department Name</label>
                             <input
                                 type="text"
-                                placeholder="e.g. Acme Corp"
-                                value={companyName}
-                                onChange={(e) => setCompanyName(e.target.value)}
+                                placeholder="e.g. Sales Department"
+                                value={departmentData.name}
+                                onChange={(e) => setDepartmentData({ ...departmentData, name: e.target.value })}
                                 required
                                 className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary dark:bg-zinc-800 dark:border-zinc-700 sm:text-sm p-2 border"
                             />
                         </div>
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className="inline-flex w-full items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-50"
-                        >
-                            {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                            Create Company
-                        </button>
-                    </form>
-                )}
-
-                {activeTab === 'department' && (
-                    <form onSubmit={handleCreateDepartment} className="space-y-6 max-w-md">
-                        <h2 className="text-xl font-semibold">Create New Departments</h2>
 
                         <div className="space-y-2">
                             <label className="text-sm font-medium">Select Company</label>
                             <select
-                                value={selectedCompanyIdForDepartment}
-                                onChange={(e) => {
-                                    setSelectedCompanyIdForDepartment(e.target.value);
-                                }}
+                                value={departmentData.company_id}
+                                onChange={(e) => setDepartmentData({ ...departmentData, company_id: e.target.value, head_id: '' })}
                                 required
                                 className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary dark:bg-zinc-800 dark:border-zinc-700 sm:text-sm p-2 border"
                             >
                                 <option value="">Select a company...</option>
-                                {companies.map((company) => (
-                                    <option key={company._id} value={company._id}>
+                                {companies.map((company, index) => (
+                                    <option key={company._id || `comp-opt-${index}`} value={company._id}>
                                         {company.name}
                                     </option>
                                 ))}
                             </select>
                         </div>
 
-
-                        <div className="space-y-3">
-                            <label className="text-sm font-medium">Department Names</label>
-                            {departmentNames.map((name, index) => (
-                                <div key={index} className="flex gap-2">
-                                    <input
-                                        type="text"
-                                        placeholder={`Department Name ${index + 1}`}
-                                        value={name}
-                                        onChange={(e) => handleDepartmentNameChange(index, e.target.value)}
-                                        required={index === 0} // Only first one required essentially
-                                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary dark:bg-zinc-800 dark:border-zinc-700 sm:text-sm p-2 border"
-                                    />
-                                    {departmentNames.length > 1 && (
-                                        <button
-                                            type="button"
-                                            onClick={() => handleRemoveDepartmentInput(index)}
-                                            className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md"
-                                        >
-                                            <X className="h-4 w-4" />
-                                        </button>
-                                    )}
-                                </div>
-                            ))}
-                            <button
-                                type="button"
-                                onClick={handleAddDepartmentInput}
-                                className="inline-flex items-center text-sm text-primary hover:text-primary/80"
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium">Department Head</label>
+                            <select
+                                value={departmentData.head_id}
+                                onChange={(e) => setDepartmentData({ ...departmentData, head_id: e.target.value })}
+                                disabled={!departmentData.company_id || companyEmployees.length === 0}
+                                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary dark:bg-zinc-800 dark:border-zinc-700 sm:text-sm p-2 border disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                <Plus className="mr-1 h-4 w-4" />
-                                Add another department
-                            </button>
+                                <option value="">
+                                    {!departmentData.company_id
+                                        ? 'Select a company first...'
+                                        : companyEmployees.length === 0
+                                            ? 'No employees in this company'
+                                            : 'Select department head...'}
+                                </option>
+                                {companyEmployees.map((person: Staff, index) => (
+                                    <option key={person._id || `head-opt-${index}`} value={person._id}>
+                                        {person.name} ({person.role || 'Staff'})
+                                    </option>
+                                ))}
+                            </select>
                         </div>
 
                         <button
@@ -288,7 +396,7 @@ export default function OrganizationPage() {
                             className="inline-flex w-full items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-50"
                         >
                             {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                            Create Departments
+                            Create Department
                         </button>
                     </form>
                 )}

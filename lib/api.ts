@@ -187,19 +187,21 @@ export const lookupApi = {
 };
 
 export const departmentApi = {
-    getById: async (id: string): Promise<any> => {
-        try {
-            const response = await api.get(`api/departments/${id}`);
-            return response.data;
-        } catch (e) {
-            throw e;
-        }
-    },
     create: async (departmentData: Partial<Department>): Promise<any> => {
         try {
+            console.log('Creating department with data:', departmentData);
             const response = await api.post('api/departments', departmentData);
+            console.log('Department created successfully:', response.data);
             return response.data;
-        } catch (e) {
+        } catch (e: any) {
+            console.error('Failed to create department:', e);
+            if (e.response) {
+                console.error('Error response:', {
+                    status: e.response.status,
+                    data: e.response.data,
+                    headers: e.response.headers
+                });
+            }
             throw e;
         }
     },
@@ -218,13 +220,29 @@ export const departmentApi = {
         } catch (e) {
             throw e;
         }
+    },
+    getById: async (id: string): Promise<Department> => {
+        try {
+            const response = await api.get(`api/departments/${id}`);
+            const data = response.data;
+            if (data && typeof data === 'object' && data.data) {
+                return data.data;
+            } else if (data && typeof data === 'object' && data.department) {
+                return data.department;
+            }
+            return data;
+        } catch (e) {
+            throw e;
+        }
     }
 };
 
 export const companyApi = {
-    create: async (companyData: Partial<Company>): Promise<any> => {
+    create: async (companyData: Partial<Company> | FormData): Promise<any> => {
         try {
-            const response = await api.post('api/companies', companyData);
+            const response = await api.post('api/companies', companyData, {
+                headers: companyData instanceof FormData ? { 'Content-Type': 'multipart/form-data' } : {}
+            });
             return response.data;
         } catch (e) {
             throw e;
@@ -242,6 +260,31 @@ export const companyApi = {
                 return (data as any).companies;
             }
             return [];
+        } catch (e) {
+            throw e;
+        }
+    },
+    getEmployees: async (companyId: string): Promise<Staff[]> => {
+        try {
+            const response = await api.get(`api/companies/${companyId}/employees`);
+            const data = response.data;
+            if (Array.isArray(data)) {
+                return data;
+            } else if (data && typeof data === 'object' && Array.isArray((data as any).data)) {
+                return (data as any).data;
+            } else if (data && typeof data === 'object' && Array.isArray((data as any).employees)) {
+                return (data as any).employees;
+            }
+            return [];
+        } catch (e) {
+            console.error('Failed to fetch company employees:', e);
+            return [];
+        }
+    },
+    delete: async (id: string): Promise<any> => {
+        try {
+            const response = await api.delete(`api/companies/${id}`);
+            return response.data;
         } catch (e) {
             throw e;
         }
