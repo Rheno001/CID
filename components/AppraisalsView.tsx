@@ -9,9 +9,10 @@ import { cn } from '@/lib/utils';
 
 interface AppraisalsViewProps {
     userId: string;
+    userName?: string;
 }
 
-export default function AppraisalsView({ userId }: AppraisalsViewProps) {
+export default function AppraisalsView({ userId, userName }: AppraisalsViewProps) {
     const today = new Date();
     const [month, setMonth] = useState(today.getMonth() + 1);
     const [year, setYear] = useState(today.getFullYear());
@@ -43,22 +44,20 @@ export default function AppraisalsView({ userId }: AppraisalsViewProps) {
 
         const data = appraisals.map(a => ({
             Date: new Date(a.date).toLocaleDateString(),
-            Score: a.score,
-            MaxScore: a.maxScore || '-',
-            Comment: a.comment || '-',
-            Evaluator: typeof a.evaluator === 'object' ? a.evaluator?.name : a.evaluator || 'N/A'
+            Workplace: a.workplace,
+            Achievements: a.achievements,
+            Challenges: a.challenges,
+            Created_At: new Date(a.createdAt).toLocaleString()
         }));
 
         const ws = XLSX.utils.json_to_sheet(data);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, `Appraisals ${month}-${year}`);
-        XLSX.writeFile(wb, `Appraisals_${userId}_${month}_${year}.xlsx`);
+        const filename = userName
+            ? `Appraisals_${userName.replace(/\s+/g, '_')}_${month}_${year}.xlsx`
+            : `Appraisals_${userId}_${month}_${year}.xlsx`;
+        XLSX.writeFile(wb, filename);
     };
-
-    // Calculate average score
-    const avgScore = appraisals.length
-        ? (appraisals.reduce((acc, curr) => acc + curr.score, 0) / appraisals.length).toFixed(1)
-        : 0;
 
     return (
         <div className="bg-white dark:bg-zinc-900 rounded-4xl shadow-sm border border-gray-100 dark:border-zinc-800 overflow-hidden flex flex-col h-full">
@@ -72,7 +71,7 @@ export default function AppraisalsView({ userId }: AppraisalsViewProps) {
                         <h2 className="text-2xl font-black text-foreground tracking-tight">Monthly Appraisals</h2>
                         {appraisals.length > 0 && (
                             <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1">
-                                Avg Score: <span className="text-orange-600 dark:text-orange-400">{avgScore}</span>
+                                Total Logs: <span className="text-orange-600 dark:text-orange-400">{appraisals.length}</span>
                             </p>
                         )}
                     </div>
@@ -115,9 +114,9 @@ export default function AppraisalsView({ userId }: AppraisalsViewProps) {
                     <thead>
                         <tr className="bg-gray-50/50 dark:bg-zinc-800/30">
                             <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest w-32">Date</th>
-                            <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest w-24">Score</th>
-                            <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Feedback / Comment</th>
-                            <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right w-40">Evaluator</th>
+                            <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest w-24">Workplace</th>
+                            <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Achievements</th>
+                            <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Challenges</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100 dark:divide-zinc-800">
@@ -140,29 +139,29 @@ export default function AppraisalsView({ userId }: AppraisalsViewProps) {
                                 </td>
                             </tr>
                         ) : appraisals.length > 0 ? (
-                            appraisals.map((appraisal) => (
-                                <tr key={appraisal._id} className="group hover:bg-gray-50/50 dark:hover:bg-zinc-800/30 transition-all">
-                                    <td className="px-8 py-6 text-sm font-bold text-foreground">
+                            appraisals.map((appraisal, index) => (
+                                <tr key={index} className="group hover:bg-gray-50/50 dark:hover:bg-zinc-800/30 transition-all">
+                                    <td className="px-8 py-6 text-sm font-bold text-foreground align-top">
                                         {new Date(appraisal.date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
-                                    </td>
-                                    <td className="px-8 py-6">
-                                        <div className="flex items-center gap-2">
-                                            <span className={cn(
-                                                "inline-flex items-center justify-center h-8 w-8 rounded-xl text-xs font-black ring-1 ring-inset shadow-sm",
-                                                appraisal.score >= 8 ? "bg-green-50 text-green-700 ring-green-600/20 dark:bg-green-900/30 dark:text-green-400" :
-                                                    appraisal.score >= 5 ? "bg-orange-50 text-orange-700 ring-orange-600/20 dark:bg-orange-900/30 dark:text-orange-400" :
-                                                        "bg-red-50 text-red-700 ring-red-600/20 dark:bg-red-900/30 dark:text-red-400"
-                                            )}>
-                                                {appraisal.score}
-                                            </span>
-                                            {appraisal.maxScore && <span className="text-[10px] text-gray-400 font-bold">/ {appraisal.maxScore}</span>}
+                                        <div className="text-[10px] text-gray-400 font-medium mt-1">
+                                            {new Date(appraisal.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                         </div>
                                     </td>
-                                    <td className="px-8 py-6 text-sm text-gray-600 dark:text-gray-300 font-medium max-w-sm truncate group-hover:whitespace-normal group-hover:overflow-visible group-hover:bg-white dark:group-hover:bg-zinc-900 group-hover:shadow-lg group-hover:z-10 transition-all rounded-lg">
-                                        {appraisal.comment || appraisal.rating || '—'}
+                                    <td className="px-8 py-6 align-top">
+                                        <span className={cn(
+                                            "inline-flex items-center rounded-lg px-2 py-1 text-[10px] font-black uppercase tracking-wider",
+                                            appraisal.workplace === 'office'
+                                                ? "bg-blue-50 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                                                : "bg-purple-50 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
+                                        )}>
+                                            {appraisal.workplace}
+                                        </span>
                                     </td>
-                                    <td className="px-8 py-6 text-xs font-bold text-gray-400 text-right uppercase tracking-wider">
-                                        {typeof appraisal.evaluator === 'object' ? appraisal.evaluator?.name : appraisal.evaluator || '—'}
+                                    <td className="px-8 py-6 text-sm text-gray-600 dark:text-gray-300 font-medium align-top min-w-[200px]">
+                                        {appraisal.achievements}
+                                    </td>
+                                    <td className="px-8 py-6 text-sm text-gray-600 dark:text-gray-300 font-medium align-top min-w-[200px]">
+                                        {appraisal.challenges}
                                     </td>
                                 </tr>
                             ))

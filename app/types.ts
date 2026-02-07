@@ -100,13 +100,24 @@ export interface AttendanceResponse {
 }
 
 export interface Appraisal {
-    _id: string;
-    userId: string;
     date: string;
-    maxScore?: number;
-    score: number;
-    comment: string;
-    rating?: string;
-    evaluator?: any;
-    createdAt?: string;
+    achievements: string;
+    challenges: string;
+    workplace: string;
+    createdAt: string;
+}
+
+export interface AppraisalResponse {
+    status: string;
+    data: {
+        user: {
+            id: string;
+            name: string;
+            email: string;
+            role: string;
+        };
+        period: string;
+        totalLogs: number;
+        logs: Appraisal[];
+    };
 }

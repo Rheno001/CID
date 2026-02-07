@@ -339,18 +339,21 @@ export const appraisalApi = {
             });
             const data = response.data;
 
+            // Backend returns: { status: "success", data: { logs: [...], user: {...}, period: "...", totalLogs: N } }
+            if (data?.status === 'success' && data.data?.logs && Array.isArray(data.data.logs)) {
+                return data.data.logs;
+            }
+
+            // Fallback for direct array
             if (Array.isArray(data)) {
                 return data as Appraisal[];
             }
 
-            // Type assertion for object response
-            const responseData = data as { data?: Appraisal[], appraisals?: Appraisal[] };
-
-            if (responseData.data && Array.isArray(responseData.data)) {
-                return responseData.data;
-            } else if (responseData.appraisals && Array.isArray(responseData.appraisals)) {
-                return responseData.appraisals;
+            // Fallback for data.data being the array directly
+            if (data?.data && Array.isArray(data.data)) {
+                return data.data;
             }
+
             return [];
         } catch (e) {
             console.error('Failed to fetch appraisals:', e);

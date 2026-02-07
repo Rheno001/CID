@@ -276,7 +276,7 @@ export default function StaffViewPage({ params }: { params: Promise<{ id: string
             </div>
 
             <Modal isOpen={isAppraisalsOpen} onClose={() => setIsAppraisalsOpen(false)}>
-                <AppraisalsView userId={id} />
+                <AppraisalsView userId={id} userName={staff?.name} />
             </Modal>
         </div>
     );
