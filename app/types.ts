@@ -98,3 +98,15 @@ export interface AttendanceResponse {
     count: number;
     data: AttendanceRecord[];
 }
+
+export interface Appraisal {
+    _id: string;
+    userId: string;
+    date: string;
+    maxScore?: number;
+    score: number;
+    comment: string;
+    rating?: string;
+    evaluator?: any;
+    createdAt?: string;
+}

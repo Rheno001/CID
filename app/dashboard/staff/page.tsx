@@ -84,13 +84,17 @@ export default function StaffPage() {
                             return (
                                 <li key={personId} className="group transition-colors hover:bg-gray-50/50 dark:hover:bg-zinc-800/50">
                                     <div className="flex flex-col sm:flex-row sm:items-center gap-4 px-6 py-6 lg:px-8">
-                                        <div className="flex items-center gap-4 flex-1">
+
+                                        <Link
+                                            href={`/dashboard/staff/view/${personId}`}
+                                            className="flex items-center gap-4 flex-1 cursor-pointer"
+                                        >
                                             <div className="h-14 w-14 rounded-2xl bg-gray-100 dark:bg-zinc-800 flex items-center justify-center text-primary font-black text-xl shadow-inner group-hover:scale-110 transition-transform">
                                                 {person.name[0]}
                                             </div>
                                             <div className="min-w-0 flex-1">
                                                 <div className="flex items-center gap-2">
-                                                    <h4 className="text-base font-bold text-foreground truncate">{person.name}</h4>
+                                                    <h4 className="text-base font-bold text-foreground truncate group-hover:text-primary transition-colors">{person.name}</h4>
                                                     <span className={cn(
                                                         "inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-bold ring-1 ring-inset uppercase tracking-wider",
                                                         person.status === 'active'
@@ -107,7 +111,7 @@ export default function StaffPage() {
                                                     <span className="truncate">{person.email}</span>
                                                 </div>
                                             </div>
-                                        </div>
+                                        </Link>
 
                                         <div className="flex items-center gap-2 sm:ml-auto">
                                             <Link

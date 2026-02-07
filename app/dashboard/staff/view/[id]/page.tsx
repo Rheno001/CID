@@ -6,6 +6,9 @@ import { staffApi, attendanceApi } from '@/lib/api';
 import { Loader2, Mail, Phone, Briefcase, Building, ShieldCheck, Clock, Calendar, ChevronLeft, CalendarCheck, MapPin, Plus, TrendingUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
+import AppraisalsView from '@/components/AppraisalsView';
+import Modal from '@/components/Modal';
+
 
 export default function StaffViewPage({ params }: { params: Promise<{ id: string }> }) {
     const resolvedParams = use(params);
@@ -15,6 +18,7 @@ export default function StaffViewPage({ params }: { params: Promise<{ id: string
     const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [isAppraisalsOpen, setIsAppraisalsOpen] = useState(false);
 
     useEffect(() => {
         const fetchStaffAndAttendance = async () => {
@@ -83,13 +87,22 @@ export default function StaffViewPage({ params }: { params: Promise<{ id: string
                     </div>
                     Back to Management
                 </Link>
-                <Link
-                    href={`/dashboard/staff/${id}`}
-                    className="inline-flex items-center gap-x-2 rounded-2xl bg-white dark:bg-zinc-800 px-5 py-3 text-sm font-bold text-foreground shadow-sm ring-1 ring-gray-200 dark:ring-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-700 transition-all"
-                >
-                    <Plus className="h-4 w-4" />
-                    Edit Details
-                </Link>
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={() => setIsAppraisalsOpen(true)}
+                        className="inline-flex items-center gap-x-2 rounded-2xl bg-white dark:bg-zinc-800 px-5 py-3 text-sm font-bold text-orange-600 dark:text-orange-400 shadow-sm ring-1 ring-orange-100 dark:ring-orange-900/20 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-all"
+                    >
+                        <TrendingUp className="h-4 w-4" />
+                        Appraisals
+                    </button>
+                    <Link
+                        href={`/dashboard/staff/${id}`}
+                        className="inline-flex items-center gap-x-2 rounded-2xl bg-white dark:bg-zinc-800 px-5 py-3 text-sm font-bold text-foreground shadow-sm ring-1 ring-gray-200 dark:ring-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-700 transition-all"
+                    >
+                        <Plus className="h-4 w-4" />
+                        Edit Details
+                    </Link>
+                </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -240,6 +253,8 @@ export default function StaffViewPage({ params }: { params: Promise<{ id: string
                         </div>
                     </div>
 
+
+
                     <div className="bg-foreground dark:bg-zinc-900 rounded-4xl p-8 shadow-2xl relative overflow-hidden group">
                         <div className="flex items-start gap-6 relative z-10">
                             <div className="h-16 w-16 rounded-3xl bg-white/10 backdrop-blur-md flex items-center justify-center text-primary shadow-xl group-hover:scale-110 transition-transform">
@@ -259,6 +274,10 @@ export default function StaffViewPage({ params }: { params: Promise<{ id: string
                     </div>
                 </div>
             </div>
+
+            <Modal isOpen={isAppraisalsOpen} onClose={() => setIsAppraisalsOpen(false)}>
+                <AppraisalsView userId={id} />
+            </Modal>
         </div>
     );
 }

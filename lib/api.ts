@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-import { AuthResponse, Staff, Ticket, Role, Department, Company, Branch } from '@/app/types';
+import { AuthResponse, Staff, Ticket, Role, Department, Company, Branch, Appraisal } from '@/app/types';
 
 const API_URL = 'https://urni-project-backend-44bx.onrender.com';
 
@@ -326,5 +326,37 @@ export const branchApi = {
     }
 };
 
+
+export const appraisalApi = {
+    getMonthly: async (userId: string, month: string | number, year: string | number): Promise<Appraisal[]> => {
+        try {
+            const response = await api.get('api/appraisals/monthly', {
+                params: {
+                    month,
+                    year,
+                    userId
+                }
+            });
+            const data = response.data;
+
+            if (Array.isArray(data)) {
+                return data as Appraisal[];
+            }
+
+            // Type assertion for object response
+            const responseData = data as { data?: Appraisal[], appraisals?: Appraisal[] };
+
+            if (responseData.data && Array.isArray(responseData.data)) {
+                return responseData.data;
+            } else if (responseData.appraisals && Array.isArray(responseData.appraisals)) {
+                return responseData.appraisals;
+            }
+            return [];
+        } catch (e) {
+            console.error('Failed to fetch appraisals:', e);
+            throw e;
+        }
+    }
+};
 
 export default api;
