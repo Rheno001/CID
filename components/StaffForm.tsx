@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Staff, Role, Department, Branch, Company } from '@/app/types';
 import { cn } from '@/lib/utils';
-import { lookupApi, staffApi, branchApi, companyApi } from '@/lib/api';
+import api, { lookupApi, staffApi, branchApi, companyApi } from '@/lib/api';
 import { Loader2, User, Mail, Briefcase, Building, Phone, Calendar, MapPin, Camera, MessageSquare, Users } from 'lucide-react';
 import { useEffect } from 'react';
 
@@ -40,32 +40,42 @@ export default function StaffForm({ initialData, isEdit = false }: StaffFormProp
         leave_balance: initialData?.leave_balance ?? 20,
         stats_score: initialData?.stats_score ?? 100,
         is_active: initialData?.is_active ?? true,
+        employment_type: initialData?.employment_type || undefined,
     });
 
     useEffect(() => {
         const fetchLookups = async () => {
             try {
-                const [rolesData, departmentsData, branchesData, companiesData, staffData] = await Promise.all([
-                    lookupApi.getRoles(),
-                    lookupApi.getDepartments(),
-                    branchApi.getAll(),
-                    companyApi.getAll(),
-                    staffApi.getAll()
+                const [deptsRes, branchesRes, companiesRes, staffRes] = await Promise.all([
+                    api.get('api/departments'),
+                    api.get('api/branches'),
+                    api.get('api/companies'),
+                    api.get('api/users/staff').catch(() => ({ data: [] }))
                 ]);
 
-                // Normalize roles
-                const rawRoles = Array.isArray(rolesData) ? rolesData : (rolesData as any).data || (rolesData as any).roles || [];
-                const normalizedRoles = rawRoles.map((r: any, idx: number) => {
-                    if (typeof r === 'string') return { _id: r, name: r };
-                    return {
-                        _id: r._id || r.id || `role-${r.name || idx}`,
-                        name: r.name || String(r)
-                    };
-                });
-                setRoles(normalizedRoles);
+                const departmentsData = deptsRes.data;
+                const branchesData = branchesRes.data;
+                const companiesData = companiesRes.data;
+                const staffData = staffRes.data;
+
+                const extractArray = (d: any, keys = ['branches', 'companies', 'departments', 'roles', 'users', 'staff', 'data', 'results', 'items']): any[] => {
+                    if (Array.isArray(d)) return d;
+                    if (!d || typeof d !== 'object') return [];
+                    // Check top-level array keys
+                    for (const k of keys) {
+                        if (Array.isArray(d[k])) return d[k];
+                    }
+                    // One level deeper string
+                    if (d.data && typeof d.data === 'object' && !Array.isArray(d.data)) {
+                        for (const k of keys) {
+                            if (Array.isArray(d.data[k])) return d.data[k];
+                        }
+                    }
+                    return [];
+                };
 
                 // Normalize departments
-                const rawDepts = Array.isArray(departmentsData) ? departmentsData : (departmentsData as any).data || (departmentsData as any).departments || [];
+                const rawDepts = extractArray(departmentsData);
                 const normalizedDepts = rawDepts.map((d: any, idx: number) => {
                     if (typeof d === 'string') return { _id: d, name: d };
                     return {
@@ -76,7 +86,7 @@ export default function StaffForm({ initialData, isEdit = false }: StaffFormProp
                 setDepartments(normalizedDepts);
 
                 // Normalize branches
-                const rawBranches = Array.isArray(branchesData) ? branchesData : (branchesData as any).data || (branchesData as any).branches || [];
+                const rawBranches = extractArray(branchesData);
                 const normalizedBranches = rawBranches.map((b: any, idx: number) => ({
                     ...b,
                     _id: b._id || b.id || `branch-${idx}`
@@ -84,7 +94,7 @@ export default function StaffForm({ initialData, isEdit = false }: StaffFormProp
                 setBranches(normalizedBranches);
 
                 // Normalize companies
-                const rawCompanies = Array.isArray(companiesData) ? companiesData : (companiesData as any).data || (companiesData as any).companies || [];
+                const rawCompanies = extractArray(companiesData);
                 const normalizedCompanies = rawCompanies.map((c: any, idx: number) => ({
                     ...c,
                     _id: c._id || c.id || `company-${idx}`
@@ -92,7 +102,7 @@ export default function StaffForm({ initialData, isEdit = false }: StaffFormProp
                 setCompanies(normalizedCompanies);
 
                 // Normalize staff for "Reports To" lookup
-                const rawStaff = Array.isArray(staffData) ? staffData : (staffData as any).data || (staffData as any).users || [];
+                const rawStaff = extractArray(staffData);
                 const normalizedStaff = rawStaff.map((s: any) => ({
                     ...s,
                     _id: s._id || s.id,
@@ -115,42 +125,46 @@ export default function StaffForm({ initialData, isEdit = false }: StaffFormProp
         try {
             const staffId = initialData?._id || initialData?.id;
 
-            // Strict Payload Construction (Fixing 400 Validation Errors)
-            const payload: any = {
-                name: formData.name,
-                email: formData.email,
-                role: formData.role,
-                phone: formData.phone || null,
-                address: formData.address || null,
-                dob: formData.dob ? new Date(formData.dob).toISOString() : null,
-                profile_pic_url: formData.profile_picture || null,
-                company_id: formData.company_id || null,
-                department_id: formData.department_id || null,
-                branch_id: formData.branch_id || null,
-                reports_to_id: formData.reports_to || null,
-                stats_score: formData.stats_score ?? 100,
-                leave_balance: formData.leave_balance ?? 20,
-                is_active: formData.is_active ?? true,
-                staff_id: formData.staff_id || null,
-            };
+            const formPayload = new FormData();
+            formPayload.append('name', formData.name || '');
+            formPayload.append('email', formData.email || '');
+            formPayload.append('role', formData.role || '');
+            formPayload.append('position', formData.employment_type || '');
+            if (formData.phone) formPayload.append('phone', formData.phone);
+            if (formData.address) formPayload.append('address', formData.address);
+            if (formData.dob) formPayload.append('dob', formData.dob);
+            if (formData.company_id) formPayload.append('company_id', formData.company_id);
+            if (formData.department_id) formPayload.append('department_id', formData.department_id);
+            if (formData.branch_id) formPayload.append('branch_id', formData.branch_id);
+            if (formData.reports_to) formPayload.append('reports_to_id', formData.reports_to);
+
+            formPayload.append('stats_score', String(formData.stats_score ?? 100));
+            formPayload.append('leave_balance', String(formData.leave_balance ?? 20));
+            formPayload.append('is_active', String(formData.is_active ?? true));
+            if (formData.staff_id) formPayload.append('staff_id', formData.staff_id);
+
+            // Attach the actual compressed File object
+            if (formData.profile_picture && formData.profile_picture instanceof File) {
+                formPayload.append('profile_picture', formData.profile_picture);
+            }
 
             // ONLY send password for new registrations
-            if (!isEdit) {
-                payload.password = formData.password;
+            if (!isEdit && formData.password) {
+                formPayload.append('password', formData.password);
             }
 
             // Identification field for updates
             if (isEdit && staffId) {
-                payload.id = staffId;
+                formPayload.append('id', staffId);
             }
 
-            console.log('REGISTER PAYLOAD', payload);
+            console.log('REGISTER PAYLOAD (FormData Keys):', Array.from(formPayload.keys()));
 
             if (isEdit && staffId) {
-                const response = await staffApi.update(staffId, payload);
+                const response = await staffApi.update(staffId, formPayload as any);
                 console.log('Update Success:', response);
             } else {
-                const response = await staffApi.create(payload);
+                const response = await staffApi.create(formPayload as any);
                 console.log('Registration Success:', response);
             }
 
@@ -177,7 +191,7 @@ export default function StaffForm({ initialData, isEdit = false }: StaffFormProp
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    const compressImage = (file: File): Promise<string> => {
+    const compressImage = (file: File): Promise<File> => {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.readAsDataURL(file);
@@ -207,9 +221,17 @@ export default function StaffForm({ initialData, isEdit = false }: StaffFormProp
                     const ctx = canvas.getContext('2d');
                     ctx?.drawImage(img, 0, 0, width, height);
 
-                    // Compress as JPEG with 0.7 quality
-                    const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
-                    resolve(dataUrl);
+                    // Compress as JPEG with 0.7 quality to a Blob
+                    canvas.toBlob((blob) => {
+                        if (blob) {
+                            const newFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".jpg", {
+                                type: 'image/jpeg'
+                            });
+                            resolve(newFile);
+                        } else {
+                            reject(new Error("Canvas to Blob failed"));
+                        }
+                    }, 'image/jpeg', 0.7);
                 };
                 img.onerror = reject;
             };
@@ -223,8 +245,9 @@ export default function StaffForm({ initialData, isEdit = false }: StaffFormProp
             try {
                 setCompressing(true);
                 setError('');
-                const compressedImage = await compressImage(file);
-                setFormData({ ...formData, profile_picture: compressedImage });
+                const compressedFile = await compressImage(file);
+                // Store the File object directly in the form state instead of a URL
+                setFormData({ ...formData, profile_picture: compressedFile as any });
             } catch (err) {
                 console.error('Compression failed:', err);
                 setError('Failed to process image. Please try another one.');
@@ -321,7 +344,11 @@ export default function StaffForm({ initialData, isEdit = false }: StaffFormProp
                                             <span className="text-[8px] font-bold text-gray-400">Processing...</span>
                                         </div>
                                     ) : formData.profile_picture ? (
-                                        <img src={formData.profile_picture} alt="Preview" className="h-full w-full object-cover" />
+                                        <img
+                                            src={formData.profile_picture instanceof File ? URL.createObjectURL(formData.profile_picture) : formData.profile_picture}
+                                            alt="Preview"
+                                            className="h-full w-full object-cover"
+                                        />
                                     ) : (
                                         <User className="h-6 w-6 text-gray-400" />
                                     )}
@@ -361,27 +388,6 @@ export default function StaffForm({ initialData, isEdit = false }: StaffFormProp
                     </h3>
                     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                         <div>
-                            <label htmlFor="role" className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 block ml-1">Position / Job Title</label>
-                            <select
-                                id="role"
-                                name="role"
-                                required
-                                value={formData.role}
-                                onChange={handleChange}
-                                className="block w-full rounded-2xl border-0 py-3.5 px-4 text-sm font-bold text-foreground bg-gray-50/50 dark:bg-zinc-800 ring-1 ring-inset ring-gray-100 dark:ring-zinc-700 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                            >
-                                <option key="role-placeholder" value="" disabled>Select Role</option>
-                                {roles.length > 0 ? (
-                                    roles.map(r => (
-                                        <option key={r._id} value={r.name}>{r.name}</option>
-                                    ))
-                                ) : (
-                                    <option key="role-loading" value={formData.role}>{formData.role || 'Loading roles...'}</option>
-                                )}
-                            </select>
-                        </div>
-
-                        <div>
                             <label htmlFor="company_id" className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 block ml-1">Company</label>
                             <select
                                 id="company_id"
@@ -399,6 +405,40 @@ export default function StaffForm({ initialData, isEdit = false }: StaffFormProp
                                 ) : (
                                     <option key="company-loading" value="">Loading companies...</option>
                                 )}
+                            </select>
+                        </div>
+
+                        <div>
+                            <label htmlFor="role" className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 block ml-1">Position / Job Title</label>
+                            <select
+                                id="role"
+                                name="role"
+                                required
+                                value={formData.role}
+                                onChange={handleChange}
+                                className="block w-full rounded-2xl border-0 py-3.5 px-4 text-sm font-bold text-foreground bg-gray-50/50 dark:bg-zinc-800 ring-1 ring-inset ring-gray-100 dark:ring-zinc-700 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                            >
+                                <option value="" disabled>Select Role</option>
+                                <option value="HOD">HOD</option>
+                                <option value="Assistant HOD">Assistant HOD</option>
+                                <option value="General Staff">General Staff</option>
+                            </select>
+                        </div>
+
+                        <div className="sm:col-span-2">
+                            <label htmlFor="employment_type" className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 block ml-1">Employment Position / Status</label>
+                            <select
+                                id="employment_type"
+                                name="employment_type"
+                                required
+                                value={formData.employment_type || ''}
+                                onChange={handleChange}
+                                className="block w-full rounded-2xl border-0 py-3.5 px-4 text-sm font-bold text-foreground bg-gray-50/50 dark:bg-zinc-800 ring-1 ring-inset ring-gray-100 dark:ring-zinc-700 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                            >
+                                <option value="" disabled>Select Position</option>
+                                <option value="FULLTIME">Full Time</option>
+                                <option value="INTERN">Intern</option>
+                                <option value="CONTRACT">Contract Staff</option>
                             </select>
                         </div>
 

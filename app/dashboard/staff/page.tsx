@@ -39,10 +39,22 @@ export default function StaffPage() {
     }, []);
 
 
-    const handleDelete = (staffId: string) => {
-        if (!confirm('Are you sure you want to delete this staff member? (Local UI only, pending backend support)')) return;
-        if (!Array.isArray(staff)) return;
-        setStaff(staff.filter((s) => (s._id || s.id) !== staffId));
+    const [deletingId, setDeletingId] = useState<string | null>(null);
+
+    const handleDelete = async (staffId: string) => {
+        if (!confirm('Are you sure you want to permanently delete this staff member?')) return;
+
+        try {
+            setDeletingId(staffId);
+            await staffApi.delete(staffId);
+            setStaff(staff.filter((s) => (s._id || s.id) !== staffId));
+        } catch (err: any) {
+            console.error('Failed to delete staff:', err);
+            const msg = err.response?.data?.message || err.message || 'Unknown error';
+            alert(`Failed to delete staff: ${msg}`);
+        } finally {
+            setDeletingId(null);
+        }
     };
 
     return (
@@ -130,10 +142,15 @@ export default function StaffPage() {
                                             </Link>
                                             <button
                                                 onClick={() => handleDelete(personId)}
-                                                className="p-3 rounded-2xl bg-gray-50 text-red-400 hover:bg-red-500 hover:text-white dark:bg-zinc-800 dark:hover:bg-red-600 transition-all shadow-sm"
+                                                disabled={deletingId === personId}
+                                                className="p-3 rounded-2xl bg-gray-50 text-red-400 hover:bg-red-500 hover:text-white dark:bg-zinc-800 dark:hover:bg-red-600 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                                                 title="Delete Record"
                                             >
-                                                <Trash2 className="h-5 w-5" />
+                                                {deletingId === personId ? (
+                                                    <Loader2 className="h-5 w-5 animate-spin" />
+                                                ) : (
+                                                    <Trash2 className="h-5 w-5" />
+                                                )}
                                             </button>
                                         </div>
                                     </div>

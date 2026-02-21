@@ -10,10 +10,11 @@ import {
     BarChart3,
     Loader2,
     Ticket as TicketIcon,
-    AlertCircle
+    AlertCircle,
+    ChevronDown
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { staffApi, attendanceApi, ticketApi, lookupApi, departmentApi } from '@/lib/api';
+import api, { staffApi, attendanceApi, ticketApi, lookupApi, departmentApi } from '@/lib/api';
 import Link from 'next/link';
 
 export default function DashboardPage() {
@@ -23,22 +24,39 @@ export default function DashboardPage() {
     const [latestTickets, setLatestTickets] = useState<any[]>([]);
     const [departmentStats, setDepartmentStats] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [selectedWeek, setSelectedWeek] = useState<Date>(new Date());
+    const [showWeekPicker, setShowWeekPicker] = useState(false);
 
     useEffect(() => {
         const fetchDashboardData = async () => {
             try {
-                const [staffData, attendanceData, ticketsData, departmentData] = await Promise.all([
-                    staffApi.getAll(),
-                    attendanceApi.getAll(),
-                    ticketApi.getAll(),
-                    lookupApi.getDepartments()
+                const [staffRes, attendanceRes, ticketsRes, deptRes] = await Promise.all([
+                    api.get('api/users/staff').catch(() => ({ data: [] })),
+                    api.get('api/attendance/status').catch(() => ({ data: [] })),
+                    api.get('api/tickets').catch(() => ({ data: [] })),
+                    api.get('api/departments').catch(() => ({ data: [] }))
                 ]);
 
-                const allStaff = Array.isArray(staffData) ? staffData :
-                    (staffData as any).data || (staffData as any).users || [];
+                const extractArray = (d: any, keys = ['departments', 'users', 'staff', 'tickets', 'attendance', 'data', 'results', 'items']): any[] => {
+                    if (Array.isArray(d)) return d;
+                    if (!d || typeof d !== 'object') return [];
+                    // Check top-level array keys
+                    for (const k of keys) {
+                        if (Array.isArray(d[k])) return d[k];
+                    }
+                    // One level deeper check
+                    if (d.data && typeof d.data === 'object' && !Array.isArray(d.data)) {
+                        for (const k of keys) {
+                            if (Array.isArray(d.data[k])) return d.data[k];
+                        }
+                    }
+                    return [];
+                };
 
-                const allDepartments = Array.isArray(departmentData) ? departmentData :
-                    (departmentData as any).data || (departmentData as any).departments || [];
+                const allStaff = extractArray(staffRes.data);
+                const allDepartments = extractArray(deptRes.data);
+                const allTickets = extractArray(ticketsRes.data);
+                const attendanceData = extractArray(attendanceRes.data);
 
                 setStaffCount(allStaff.length);
 
@@ -49,12 +67,10 @@ export default function DashboardPage() {
                 setLatestStaff(sortedStaff);
 
                 // Latest Tickets
-                const allTickets = Array.isArray(ticketsData) ? ticketsData :
-                    (ticketsData as any).data || (ticketsData as any).tickets || [];
                 setLatestTickets(allTickets.slice(-3).reverse());
 
                 // Department Breakdown: Calculate locally from allStaff for speed and reliability
-                console.log('Calculating department stats locally from', allStaff.length, 'staff members');
+                console.log('Calculating department stats locally from', allStaff.length, 'staff members &', allDepartments.length, 'departments');
 
                 const stats = allDepartments.map((dept: any) => {
                     const deptId = dept._id || dept.id;
@@ -138,7 +154,7 @@ export default function DashboardPage() {
 
                 {/* Left Column: Analytics & Staff (8/12) */}
                 <div className="lg:col-span-8 space-y-8">
-                    {/* Analytics Hero */}
+                    {/* Weekly Attendance Pie Chart */}
                     <div className="bg-white dark:bg-zinc-900 rounded-4xl p-8 shadow-sm border border-gray-100 dark:border-zinc-800 relative overflow-hidden group">
                         <div className="flex justify-between items-start relative z-10">
                             <div className="space-y-4">
@@ -146,62 +162,178 @@ export default function DashboardPage() {
                                     <div className="bg-gray-100 dark:bg-zinc-800 p-2.5 rounded-2xl">
                                         <BarChart3 className="h-5 w-5 text-foreground" />
                                     </div>
-                                    <h2 className="text-3xl font-bold tracking-tight text-foreground">Attendance Tracker</h2>
+                                    <h2 className="text-3xl font-bold tracking-tight text-foreground">Weekly Attendance</h2>
                                 </div>
                                 <p className="text-gray-500 text-sm max-w-sm">
-                                    Real-time tracking of team presence and operational capacity across all departments.
+                                    Distribution of attendance across the 5 working days of the week.
                                 </p>
                             </div>
-                            <button className="bg-gray-50 dark:bg-zinc-800 px-4 py-2 rounded-xl text-sm font-bold border border-gray-200 dark:border-zinc-700 flex items-center gap-2 hover:bg-white transition-all">
-                                Week <Clock className="h-4 w-4 text-gray-400" />
-                            </button>
+                            <div className="relative">
+                                <button
+                                    onClick={() => setShowWeekPicker(!showWeekPicker)}
+                                    className="bg-gray-50 dark:bg-zinc-800 px-4 py-2 rounded-xl text-sm font-bold border border-gray-200 dark:border-zinc-700 flex items-center gap-2 hover:bg-white dark:hover:bg-zinc-700 transition-all"
+                                >
+                                    {(() => {
+                                        const getWeekStart = (date: Date) => {
+                                            const d = new Date(date);
+                                            const day = d.getDay();
+                                            const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Adjust to Monday
+                                            return new Date(d.setDate(diff));
+                                        };
+
+                                        const weekStart = getWeekStart(selectedWeek);
+                                        const weekEnd = new Date(weekStart);
+                                        weekEnd.setDate(weekStart.getDate() + 4); // Friday
+
+                                        const formatDate = (date: Date) => {
+                                            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                                        };
+
+                                        return `${formatDate(weekStart)} - ${formatDate(weekEnd)}`;
+                                    })()}
+                                    <ChevronDown className={cn("h-4 w-4 text-gray-400 transition-transform", showWeekPicker && "rotate-180")} />
+                                </button>
+
+                                {showWeekPicker && (
+                                    <>
+                                        <div
+                                            className="fixed inset-0 z-10"
+                                            onClick={() => setShowWeekPicker(false)}
+                                        />
+                                        <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-zinc-900 rounded-2xl shadow-xl border border-gray-200 dark:border-zinc-800 p-4 z-20">
+                                            <h4 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-3">Select Week</h4>
+                                            <div className="space-y-2">
+                                                {[0, -1, -2, -3].map((weekOffset) => {
+                                                    const date = new Date();
+                                                    date.setDate(date.getDate() + (weekOffset * 7));
+
+                                                    const getWeekStart = (d: Date) => {
+                                                        const day = d.getDay();
+                                                        const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+                                                        return new Date(d.getFullYear(), d.getMonth(), diff);
+                                                    };
+
+                                                    const weekStart = getWeekStart(date);
+                                                    const weekEnd = new Date(weekStart);
+                                                    weekEnd.setDate(weekStart.getDate() + 4);
+
+                                                    const formatDate = (d: Date) => {
+                                                        return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                                                    };
+
+                                                    const isSelected = getWeekStart(selectedWeek).getTime() === weekStart.getTime();
+
+                                                    return (
+                                                        <button
+                                                            key={weekOffset}
+                                                            onClick={() => {
+                                                                setSelectedWeek(weekStart);
+                                                                setShowWeekPicker(false);
+                                                            }}
+                                                            className={cn(
+                                                                "w-full text-left px-3 py-2 rounded-xl text-sm font-bold transition-all",
+                                                                isSelected
+                                                                    ? "bg-primary text-white"
+                                                                    : "hover:bg-gray-50 dark:hover:bg-zinc-800 text-foreground"
+                                                            )}
+                                                        >
+                                                            <div className="flex justify-between items-center">
+                                                                <span>{formatDate(weekStart)} - {formatDate(weekEnd)}</span>
+                                                                {weekOffset === 0 && (
+                                                                    <span className="text-[10px] bg-white/20 px-2 py-0.5 rounded-full">Current</span>
+                                                                )}
+                                                            </div>
+                                                        </button>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    </>
+                                )}
+                            </div>
                         </div>
 
-                        {/* Chart Area */}
-                        <div className="mt-12 flex items-end justify-between gap-2 h-44">
-                            <div className="space-y-6 flex-1 text-center">
-                                <span className="text-6xl font-black text-foreground tracking-tighter">
-                                    {Math.round((presentToday / (staffCount || 1)) * 100)}%
-                                </span>
-                                <p className="text-xs font-black text-primary uppercase tracking-widest mx-auto leading-tight">
-                                    Current Capacity
-                                </p>
+                        {/* Pie Chart Area */}
+                        <div className="mt-12 flex items-center justify-between gap-8">
+                            {/* Pie Chart */}
+                            <div className="flex-1 flex items-center justify-center">
+                                <div className="relative w-56 h-56">
+                                    {/* SVG Pie Chart */}
+                                    <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
+                                        {(() => {
+                                            const weekData = [
+                                                { day: 'Monday', value: 85, color: '#64748b' },      // Slate
+                                                { day: 'Tuesday', value: 92, color: '#0891b2' },     // Cyan
+                                                { day: 'Wednesday', value: 78, color: '#d97706' },   // Amber
+                                                { day: 'Thursday', value: 88, color: '#6366f1' },    // Indigo
+                                                { day: 'Friday', value: 95, color: '#e11d48' },      // Rose
+                                            ];
+                                            const total = weekData.reduce((sum, d) => sum + d.value, 0);
+                                            let currentAngle = 0;
+
+                                            return weekData.map((segment, i) => {
+                                                const percentage = segment.value / total;
+                                                const angle = percentage * 360;
+                                                const radius = 15.9155; // circumference = 100
+                                                const offset = 100 - (percentage * 100);
+
+                                                const slice = (
+                                                    <circle
+                                                        key={i}
+                                                        cx="50"
+                                                        cy="50"
+                                                        r={radius}
+                                                        fill="transparent"
+                                                        stroke={segment.color}
+                                                        strokeWidth="32"
+                                                        strokeDasharray={`${percentage * 100} ${100 - (percentage * 100)}`}
+                                                        strokeDashoffset={-currentAngle * 100 / 360}
+                                                        className="transition-all duration-300 hover:opacity-80 cursor-pointer"
+                                                    />
+                                                );
+                                                currentAngle += angle;
+                                                return slice;
+                                            });
+                                        })()}
+                                    </svg>
+                                    {/* Center Label */}
+                                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                        <span className="text-4xl font-black text-foreground tracking-tighter">
+                                            {Math.round((presentToday / (staffCount || 1)) * 100)}%
+                                        </span>
+                                        <p className="text-[10px] font-black text-primary uppercase tracking-widest mt-1">
+                                            Today
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
-                            {/* Mock Bar Chart */}
-                            <div className="flex-2 flex items-end justify-around h-full gap-4">
+
+                            {/* Legend */}
+                            <div className="flex-1 space-y-4">
                                 {[
-                                    { day: 'S', h: '40%', active: false },
-                                    { day: 'M', h: '65%', active: false },
-                                    { day: 'T', h: '90%', active: true, val: `${presentToday}` },
-                                    { day: 'W', h: '55%', active: false },
-                                    { day: 'T', h: '70%', active: false },
-                                    { day: 'F', h: '85%', active: false },
-                                    { day: 'S', h: '50%', active: false },
-                                ].map((bar, i) => (
-                                    <div key={i} className="flex flex-col items-center gap-3 group/bar">
-                                        <div className="relative w-12 h-40 flex items-end justify-center">
-                                            {bar.active && (
-                                                <div className="absolute -top-10 bg-foreground text-white text-xs font-bold py-1.5 px-3 rounded-lg shadow-lg mb-2 z-20 whitespace-nowrap">
-                                                    {bar.val} present
-                                                </div>
-                                            )}
-                                            <div className="w-1 h-32 bg-gray-100 dark:bg-zinc-800 rounded-full absolute left-1/2 -translate-x-1/2" />
-                                            <div
-                                                className={cn(
-                                                    "w-3 rounded-full relative z-10 transition-all duration-500",
-                                                    bar.active ? "bg-foreground h-10" : "bg-primary/40 group-hover/bar:bg-primary h-2"
-                                                )}
-                                                style={{ bottom: bar.h }}
-                                            />
-                                            {bar.active && (
-                                                <div className="absolute w-12 h-32 bg-gray-50/50 dark:bg-zinc-800/50 rounded-2xl top-0 translate-y-6" />
-                                            )}
+                                    { day: 'Monday', value: 85, color: 'bg-slate-500' },
+                                    { day: 'Tuesday', value: 92, color: 'bg-cyan-600' },
+                                    { day: 'Wednesday', value: 78, color: 'bg-amber-600' },
+                                    { day: 'Thursday', value: 88, color: 'bg-indigo-500' },
+                                    { day: 'Friday', value: 95, color: 'bg-rose-600' },
+                                ].map((item, i) => (
+                                    <div key={i} className="flex items-center justify-between group/item cursor-pointer">
+                                        <div className="flex items-center gap-3">
+                                            <div className={cn("w-4 h-4 rounded-full transition-all group-hover/item:scale-110", item.color)} />
+                                            <span className="text-sm font-bold text-foreground group-hover/item:text-primary transition-colors">
+                                                {item.day}
+                                            </span>
                                         </div>
-                                        <div className={cn(
-                                            "w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold transition-all",
-                                            bar.active ? "bg-foreground text-white shadow-xl" : "bg-gray-100 dark:bg-zinc-800 text-gray-500"
-                                        )}>
-                                            {bar.day}
+                                        <div className="flex items-center gap-3">
+                                            <span className="text-xs font-black text-gray-400">
+                                                {item.value}%
+                                            </span>
+                                            <div className="w-20 h-1.5 bg-gray-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+                                                <div
+                                                    className={cn("h-full rounded-full transition-all duration-700", item.color)}
+                                                    style={{ width: `${item.value}%` }}
+                                                />
+                                            </div>
                                         </div>
                                     </div>
                                 ))}

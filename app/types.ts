@@ -20,11 +20,12 @@ export interface Staff {
     password?: string;
     phone?: string;
     dob?: string;
-    profile_picture?: string;
+    profile_picture?: string | File;
     profile_pic_url?: string | null; // API field name
     address?: string;
     reports_to?: string;
     reports_to_id?: string | null; // API field name
+    employment_type?: 'full_time' | 'graduate_intern' | 'volunteer' | 'contract_staff';
     status: 'active' | 'inactive';
     is_active?: boolean;
     leave_balance?: number; // Default: 20
@@ -51,14 +52,18 @@ export interface Department {
 
 export interface Company {
     _id: string;
+    id?: string;
     name: string;
     logo?: string;
+    logo_url?: string;
     abbreviation?: string;
     address?: string;
+    branch_id?: string;
 }
 
 export interface Branch {
     _id: string;
+    id?: string;
     name: string;
     address: string;
     location_city: string;
