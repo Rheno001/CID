@@ -6,7 +6,8 @@ import Image from 'next/image';
 import TBGLogo from '@/assets/TBG.webp';
 import { authApi } from '@/lib/api';
 import { cn } from '@/lib/utils';
-import { Loader2, Lock, Mail } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
+import Link from 'next/link';
 
 export default function LoginPage() {
     const router = useRouter();
@@ -15,6 +16,7 @@ export default function LoginPage() {
     const [formData, setFormData] = useState({
         email: '',
         password: '',
+        remember: false,
     });
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -24,15 +26,12 @@ export default function LoginPage() {
 
         try {
             const response = await authApi.login(formData.email, formData.password);
-            // Store token and user data
             localStorage.setItem('token', response.token);
             localStorage.setItem('user', JSON.stringify(response.user));
-
             router.push('/dashboard');
         } catch (err: any) {
             console.error('Login failed:', err);
             if (err.response?.status === 404) {
-                // Fallback for demo if API endpoints are wrong to allow user to see UI
                 setError('Login endpoint not found (404). Please verify API URL.');
             } else {
                 setError(err.response?.data?.message || 'Invalid credentials. Please try again.');
@@ -43,88 +42,124 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 dark:bg-zinc-900 sm:px-6 lg:px-8">
-            <div className="w-full max-w-md space-y-8">
-                <div className="text-center">
-                    <div className="flex flex-col items-center justify-center gap-2 mb-6">
-                        <div className="relative h-16 w-auto">
-                            <Image
-                                src={TBGLogo}
-                                alt="TBG Logo"
-                                height={64}
-                                width={192}
-                                className="h-16 w-auto object-contain"
-                                priority
-                            />
+        <div className="flex min-h-screen bg-gray-100 p-4 sm:p-8 md:p-12 lg:p-24 justify-center items-center">
+            <div className="flex w-full max-w-6xl bg-white rounded-2xl overflow-hidden shadow-2xl h-[800px] max-h-screen">
+
+                {/* Left Side: Logo & Branding */}
+                <div className="hidden lg:flex lg:w-[45%] flex-col relative bg-white items-center justify-center p-12 lg:border-r border-gray-100">
+
+                    <div className="absolute top-12 left-12 flex items-center gap-3">
+                        <div className="h-10 w-10 bg-orange-500 rounded-lg flex items-center justify-center text-white font-bold text-xl shadow-md">
+                            A
                         </div>
+                        <span className="text-2xl font-bold text-[#343a40]">Akademi</span>
                     </div>
-                    <h2 className="mt-6 text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-100">
-                        Sign in to your account
-                    </h2>
-                    <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                        Admin Dashboard Access
-                    </p>
+
+                    <div className="relative z-10 flex flex-col items-center justify-center w-full max-w-sm">
+                        <Image
+                            src={TBGLogo}
+                            alt="TBG Logo"
+                            width={280}
+                            height={120}
+                            className="object-contain"
+                            priority
+                        />
+                    </div>
                 </div>
 
-                <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-                    <div className="-space-y-px rounded-md shadow-sm">
-                        <div className="relative">
-                            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                                <Mail className="h-5 w-5 text-gray-400" />
-                            </div>
-                            <input
-                                id="email-address"
-                                name="email"
-                                type="email"
-                                autoComplete="email"
-                                required
-                                className="relative block w-full rounded-t-md border-0 py-1.5 pl-10 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-indigo-600 dark:bg-zinc-800 dark:ring-zinc-700 dark:text-white sm:text-sm sm:leading-6"
-                                placeholder="Email address"
-                                value={formData.email}
-                                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                            />
+                {/* Right Side: Login Form */}
+                <div className="flex-1 flex flex-col justify-center px-8 sm:px-12 md:px-16 lg:px-20 py-12 bg-white relative">
+                    <div className="w-full max-w-md mx-auto">
+                        <div className="mb-10 text-center lg:text-left">
+                            <h2 className="text-3xl font-bold text-[#2b2d42] mb-3">
+                                Sign in your account
+                            </h2>
+                            <p className="text-[#8d99ae] text-sm leading-relaxed">
+                                Welcome back! Login with your data that you<br className="hidden lg:block" /> entered during registration
+                            </p>
                         </div>
-                        <div className="relative">
-                            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                                <Lock className="h-5 w-5 text-gray-400" />
-                            </div>
-                            <input
-                                id="password"
-                                name="password"
-                                type="password"
-                                autoComplete="current-password"
-                                required
-                                className="relative block w-full rounded-b-md border-0 py-1.5 pl-10 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-indigo-600 dark:bg-zinc-800 dark:ring-zinc-700 dark:text-white sm:text-sm sm:leading-6"
-                                placeholder="Password"
-                                value={formData.password}
-                                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                            />
-                        </div>
-                    </div>
 
-                    {error && (
-                        <div className="rounded-md bg-red-50 p-4 text-sm text-red-700 dark:bg-red-900/30 dark:text-red-400">
-                            {error}
-                        </div>
-                    )}
 
-                    <div>
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className={cn(
-                                "group relative flex w-full justify-center rounded-md bg-orange-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-orange-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600",
-                                loading && "opacity-50 cursor-not-allowed"
+
+                        <form className="space-y-6" onSubmit={handleSubmit}>
+                            <div className="space-y-2">
+                                <label htmlFor="email" className="block text-sm font-semibold text-[#8d99ae]">
+                                    Email<span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    id="email"
+                                    name="email"
+                                    type="email"
+                                    required
+                                    className="block w-full rounded-lg border border-gray-200 py-3 px-4 text-[#2b2d42] placeholder-[#adb5bd] focus:border-[#4f46e5] focus:ring-1 focus:ring-[#4f46e5] outline-none transition-all shadow-sm"
+                                    placeholder="demo@example.com"
+                                    value={formData.email}
+                                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <div className="flex items-center justify-between">
+                                    <label htmlFor="password" className="block text-sm font-semibold text-[#8d99ae]">
+                                        Password<span className="text-red-500">*</span>
+                                    </label>
+                                    <Link href="#" className="text-sm font-medium text-orange-500 hover:text-orange-600 transition-colors">
+                                        Forgot Password?
+                                    </Link>
+                                </div>
+                                <input
+                                    id="password"
+                                    name="password"
+                                    type="password"
+                                    required
+                                    className="block w-full rounded-lg border border-gray-200 py-3 px-4 text-[#2b2d42] placeholder-[#adb5bd] focus:border-[#4f46e5] focus:ring-1 focus:ring-[#4f46e5] outline-none transition-all shadow-sm"
+                                    placeholder="••••••"
+                                    value={formData.password}
+                                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                                />
+                            </div>
+
+                            <div className="flex items-center">
+                                <input
+                                    id="remember"
+                                    name="remember"
+                                    type="checkbox"
+                                    className="h-4 w-4 rounded border-gray-300 text-[#4f46e5] focus:ring-[#4f46e5] outline-none cursor-pointer"
+                                    checked={formData.remember}
+                                    onChange={(e) => setFormData({ ...formData, remember: e.target.checked })}
+                                />
+                                <label htmlFor="remember" className="ml-2 block text-sm font-medium text-[#8d99ae] cursor-pointer">
+                                    Remember my preference
+                                </label>
+                            </div>
+
+                            {error && (
+                                <div className="rounded-lg bg-red-50 p-4 border border-red-100">
+                                    <p className="text-sm font-medium text-red-600">
+                                        {error}
+                                    </p>
+                                </div>
                             )}
-                        >
-                            {loading ? (
-                                <Loader2 className="h-5 w-5 animate-spin" />
-                            ) : (
-                                "Sign in"
-                            )}
-                        </button>
+
+                            <div className="pt-6">
+                                <button
+                                    type="submit"
+                                    disabled={loading}
+                                    className={cn(
+                                        "w-full flex justify-center items-center rounded-lg bg-orange-500 hover:bg-orange-600 py-3.5 px-4 text-base font-semibold text-white shadow-md transition-all active:scale-[0.98]",
+                                        loading && "opacity-70 cursor-not-allowed"
+                                    )}
+                                >
+                                    {loading ? (
+                                        <Loader2 className="h-5 w-5 animate-spin" />
+                                    ) : (
+                                        "Sign Me In"
+                                    )}
+                                </button>
+                            </div>
+                        </form>
                     </div>
-                </form>
+                </div>
             </div>
         </div>
     );

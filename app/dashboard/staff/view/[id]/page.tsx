@@ -3,7 +3,7 @@
 import { use, useState, useEffect } from 'react';
 import { Staff, AttendanceRecord } from '@/app/types';
 import { staffApi, attendanceApi } from '@/lib/api';
-import { Loader2, Mail, Phone, Briefcase, Building, ShieldCheck, Clock, Calendar, ChevronLeft, CalendarCheck, MapPin, Plus, TrendingUp } from 'lucide-react';
+import { Loader2, Mail, Phone, Briefcase, Building, ShieldCheck, Clock, Calendar, ChevronLeft, CalendarCheck, MapPin, Plus, TrendingUp, LogIn, LogOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import AppraisalsView from '@/components/AppraisalsView';
@@ -19,6 +19,8 @@ export default function StaffViewPage({ params }: { params: Promise<{ id: string
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [isAppraisalsOpen, setIsAppraisalsOpen] = useState(false);
+    const [clockLoading, setClockLoading] = useState<'in' | 'out' | null>(null);
+    const [clockMessage, setClockMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
     useEffect(() => {
         const fetchStaffAndAttendance = async () => {
@@ -57,6 +59,41 @@ export default function StaffViewPage({ params }: { params: Promise<{ id: string
         fetchStaffAndAttendance();
     }, [id]);
 
+    const handleClock = async (action: 'in' | 'out') => {
+        setClockLoading(action);
+        setClockMessage(null);
+        try {
+            let res: any;
+            if (action === 'in') {
+                res = await attendanceApi.clockIn(id);
+            } else {
+                res = await attendanceApi.clockOut(id);
+            }
+
+            // Show the server's message (e.g. "Clocked in successfully at Lugbe")
+            const successText = res?.message || (action === 'in' ? 'Clocked in successfully.' : 'Clocked out successfully.');
+            setClockMessage({ type: 'success', text: successText });
+
+            // Add the new record from the response to the top of the list
+            const newRecord: AttendanceRecord | null = res?.data?.attendance ?? null;
+            if (newRecord) {
+                setAttendance(prev => [newRecord, ...prev]);
+            } else {
+                // Fallback: re-fetch if response doesn't include the record
+                const updated = await attendanceApi.getByStaffId(id);
+                let list: AttendanceRecord[] = [];
+                if (Array.isArray(updated)) list = updated;
+                else if (updated?.data) list = Array.isArray(updated.data) ? updated.data : [updated.data];
+                setAttendance(list);
+            }
+        } catch (err: any) {
+            const msg = err?.response?.data?.message || err?.message || 'Something went wrong';
+            setClockMessage({ type: 'error', text: msg });
+        } finally {
+            setClockLoading(null);
+        }
+    };
+
     if (isLoading) {
         return (
             <div className="flex justify-center py-20">
@@ -81,13 +118,34 @@ export default function StaffViewPage({ params }: { params: Promise<{ id: string
     return (
         <div className="mx-auto space-y-8 pb-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <Link href="/dashboard/staff" className="flex items-center text-sm font-bold text-gray-400 hover:text-primary transition-all group">
+                <Link href="/dashboard/staff" className="flex items-center text-sm font-bold text-gray-600 dark:text-gray-400 hover:text-primary transition-all group">
                     <div className="p-2 rounded-xl bg-white dark:bg-zinc-900 shadow-sm border border-gray-100 dark:border-zinc-800 mr-3 group-hover:scale-110">
                         <ChevronLeft className="h-4 w-4" />
                     </div>
                     Back to Management
                 </Link>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
+                    {/* Clock In */}
+                    <button
+                        onClick={() => handleClock('in')}
+                        disabled={clockLoading !== null}
+                        className="inline-flex items-center gap-x-2 rounded-2xl bg-green-50 dark:bg-green-900/20 px-5 py-3 text-sm font-bold text-green-700 dark:text-green-400 shadow-sm ring-1 ring-green-200 dark:ring-green-800 hover:bg-green-100 dark:hover:bg-green-900/40 disabled:opacity-50 transition-all"
+                    >
+                        {clockLoading === 'in' ? <Loader2 className="h-4 w-4 animate-spin" /> : <LogIn className="h-4 w-4" />}
+                        Clock In
+                    </button>
+
+                    {/* Clock Out */}
+                    <button
+                        onClick={() => handleClock('out')}
+                        disabled={clockLoading !== null}
+                        className="inline-flex items-center gap-x-2 rounded-2xl bg-red-50 dark:bg-red-900/20 px-5 py-3 text-sm font-bold text-red-600 dark:text-red-400 shadow-sm ring-1 ring-red-200 dark:ring-red-800 hover:bg-red-100 dark:hover:bg-red-900/40 disabled:opacity-50 transition-all"
+                    >
+                        {clockLoading === 'out' ? <Loader2 className="h-4 w-4 animate-spin" /> : <LogOut className="h-4 w-4" />}
+                        Clock Out
+                    </button>
+
+                    {/* Appraisals */}
                     <button
                         onClick={() => setIsAppraisalsOpen(true)}
                         className="inline-flex items-center gap-x-2 rounded-2xl bg-white dark:bg-zinc-800 px-5 py-3 text-sm font-bold text-orange-600 dark:text-orange-400 shadow-sm ring-1 ring-orange-100 dark:ring-orange-900/20 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-all"
@@ -95,6 +153,8 @@ export default function StaffViewPage({ params }: { params: Promise<{ id: string
                         <TrendingUp className="h-4 w-4" />
                         Appraisals
                     </button>
+
+                    {/* Edit Details */}
                     <Link
                         href={`/dashboard/staff/${id}`}
                         className="inline-flex items-center gap-x-2 rounded-2xl bg-white dark:bg-zinc-800 px-5 py-3 text-sm font-bold text-foreground shadow-sm ring-1 ring-gray-200 dark:ring-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-700 transition-all"
@@ -103,6 +163,19 @@ export default function StaffViewPage({ params }: { params: Promise<{ id: string
                         Edit Details
                     </Link>
                 </div>
+
+                {/* Clock status message */}
+                {clockMessage && (
+                    <div className={cn(
+                        'mt-2 flex items-center justify-between gap-3 rounded-xl px-4 py-2.5 text-sm font-semibold',
+                        clockMessage.type === 'success'
+                            ? 'bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400'
+                            : 'bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400'
+                    )}>
+                        <span>{clockMessage.text}</span>
+                        <button onClick={() => setClockMessage(null)} className="text-xs opacity-60 hover:opacity-100">✕</button>
+                    </div>
+                )}
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -122,13 +195,13 @@ export default function StaffViewPage({ params }: { params: Promise<{ id: string
                             </div>
                             <div className="mt-6 text-center">
                                 <h1 className="text-2xl font-black text-foreground tracking-tight">{staff.name}</h1>
-                                <p className="text-sm font-bold text-gray-400 mt-1 uppercase tracking-widest">{staff.role}</p>
+                                <p className="text-sm font-bold text-gray-600 dark:text-gray-400 mt-1 uppercase tracking-widest">{staff.role}</p>
                                 <div className="mt-4 flex justify-center">
                                     <span className={cn(
                                         "inline-flex items-center rounded-full px-4 py-1 text-xs font-black ring-1 ring-inset uppercase tracking-tighter",
                                         staff.status === 'active'
                                             ? "bg-green-50 text-green-700 ring-green-600/20 dark:bg-green-900/30 dark:text-green-400"
-                                            : "bg-gray-50 text-gray-500 ring-gray-400/20 dark:bg-zinc-800 dark:text-gray-400"
+                                            : "bg-gray-50 text-gray-500 ring-gray-400/20 dark:bg-zinc-800 dark:text-gray-600 dark:text-gray-400"
                                     )}>
                                         {staff.status}
                                     </span>
@@ -137,29 +210,29 @@ export default function StaffViewPage({ params }: { params: Promise<{ id: string
 
                             <div className="mt-10 space-y-5">
                                 <div className="flex items-center gap-4 group/item">
-                                    <div className="h-10 w-10 rounded-xl bg-gray-50 dark:bg-zinc-800 flex items-center justify-center text-gray-400 group-hover/item:text-primary transition-colors">
+                                    <div className="h-10 w-10 rounded-xl bg-gray-50 dark:bg-zinc-800 flex items-center justify-center text-gray-600 dark:text-gray-400 group-hover/item:text-primary transition-colors">
                                         <Mail className="h-5 w-5" />
                                     </div>
                                     <div className="min-w-0 flex-1">
-                                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Email Address</p>
+                                        <p className="text-[10px] font-black text-gray-600 dark:text-gray-400 uppercase tracking-widest">Email Address</p>
                                         <p className="text-sm font-bold text-foreground truncate">{staff.email}</p>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-4 group/item">
-                                    <div className="h-10 w-10 rounded-xl bg-gray-50 dark:bg-zinc-800 flex items-center justify-center text-gray-400 group-hover/item:text-primary transition-colors">
+                                    <div className="h-10 w-10 rounded-xl bg-gray-50 dark:bg-zinc-800 flex items-center justify-center text-gray-600 dark:text-gray-400 group-hover/item:text-primary transition-colors">
                                         <Phone className="h-5 w-5" />
                                     </div>
                                     <div className="min-w-0 flex-1">
-                                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Phone Number</p>
+                                        <p className="text-[10px] font-black text-gray-600 dark:text-gray-400 uppercase tracking-widest">Phone Number</p>
                                         <p className="text-sm font-bold text-foreground">{staff.phone || 'No contact set'}</p>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-4 group/item">
-                                    <div className="h-10 w-10 rounded-xl bg-gray-50 dark:bg-zinc-800 flex items-center justify-center text-gray-400 group-hover/item:text-primary transition-colors">
+                                    <div className="h-10 w-10 rounded-xl bg-gray-50 dark:bg-zinc-800 flex items-center justify-center text-gray-600 dark:text-gray-400 group-hover/item:text-primary transition-colors">
                                         <Building className="h-5 w-5" />
                                     </div>
                                     <div className="min-w-0 flex-1">
-                                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Department</p>
+                                        <p className="text-[10px] font-black text-gray-600 dark:text-gray-400 uppercase tracking-widest">Department</p>
                                         <p className="text-sm font-bold text-foreground">
                                             {(typeof staff.department === 'object' && staff.department !== null) ? (staff.department as any).name : (staff.department || 'General Administration')}
                                         </p>
@@ -170,11 +243,11 @@ export default function StaffViewPage({ params }: { params: Promise<{ id: string
                     </div>
 
                     <div className="bg-white dark:bg-zinc-900 p-8 rounded-4xl shadow-sm border border-gray-100 dark:border-zinc-800 space-y-6">
-                        <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest">Engagement Overview</h3>
+                        <h3 className="text-xs font-black text-gray-600 dark:text-gray-400 uppercase tracking-widest">Engagement Overview</h3>
                         <div className="grid grid-cols-1 gap-4">
                             <div className="flex items-center justify-between p-4 rounded-3xl bg-gray-50 dark:bg-zinc-800/50">
                                 <div>
-                                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none">Days Present</p>
+                                    <p className="text-[10px] font-black text-gray-600 dark:text-gray-400 uppercase tracking-widest leading-none">Days Present</p>
                                     <p className="text-4xl font-black text-primary mt-2">{attendance.filter(a => a.status === 'present').length}</p>
                                 </div>
                                 <div className="h-14 w-14 rounded-2xl bg-white dark:bg-zinc-800 shadow-sm flex items-center justify-center">
@@ -183,11 +256,11 @@ export default function StaffViewPage({ params }: { params: Promise<{ id: string
                             </div>
                             <div className="flex items-center justify-between p-4 rounded-3xl bg-gray-50 dark:bg-zinc-800/50">
                                 <div>
-                                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none">Total Logs</p>
+                                    <p className="text-[10px] font-black text-gray-600 dark:text-gray-400 uppercase tracking-widest leading-none">Total Logs</p>
                                     <p className="text-4xl font-black text-foreground mt-2">{attendance.length}</p>
                                 </div>
                                 <div className="h-14 w-14 rounded-2xl bg-white dark:bg-zinc-800 shadow-sm flex items-center justify-center">
-                                    <Clock className="h-6 w-6 text-gray-400" />
+                                    <Clock className="h-6 w-6 text-gray-600 dark:text-gray-400" />
                                 </div>
                             </div>
                         </div>
@@ -204,47 +277,61 @@ export default function StaffViewPage({ params }: { params: Promise<{ id: string
                                 </div>
                                 <h2 className="text-2xl font-black text-foreground tracking-tight">Timeline History</h2>
                             </div>
-                            <button className="text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-primary transition-colors">Clear History</button>
+                            <button className="text-[10px] font-black uppercase tracking-widest text-gray-600 dark:text-gray-400 hover:text-primary transition-colors">Clear History</button>
                         </div>
 
                         <div className="flex-1">
                             <table className="w-full text-left border-collapse">
                                 <thead>
                                     <tr className="bg-gray-50/50 dark:bg-zinc-800/30">
-                                        <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Calendar Date</th>
-                                        <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Attendance Status</th>
-                                        <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Time of Entry</th>
+                                        <th className="px-8 py-4 text-[10px] font-black text-gray-600 dark:text-gray-400 uppercase tracking-widest">Calendar Date</th>
+                                        <th className="px-8 py-4 text-[10px] font-black text-gray-600 dark:text-gray-400 uppercase tracking-widest">Attendance Status</th>
+                                        <th className="px-8 py-4 text-[10px] font-black text-gray-600 dark:text-gray-400 uppercase tracking-widest text-right">Time of Entry</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-100 dark:divide-zinc-800">
                                     {attendance.length > 0 ? (
-                                        attendance.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map((record) => (
-                                            <tr key={record._id} className="group hover:bg-gray-50/50 dark:hover:bg-zinc-800/30 transition-all">
-                                                <td className="px-8 py-6 text-sm font-bold text-foreground">
-                                                    {new Date(record.date).toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}
-                                                </td>
-                                                <td className="px-8 py-6">
-                                                    <span className={cn(
-                                                        "inline-flex items-center rounded-full px-3 py-1 text-[10px] font-black ring-1 ring-inset uppercase tracking-tighter",
-                                                        record.status === 'present'
-                                                            ? "bg-green-50 text-green-700 ring-green-600/20 dark:bg-green-900/30 dark:text-green-400"
-                                                            : "bg-red-50 text-red-700 ring-red-600/20 dark:bg-red-900/30 dark:text-red-400"
-                                                    )}>
-                                                        {record.status}
-                                                    </span>
-                                                </td>
-                                                <td className="px-8 py-6 text-sm font-bold text-gray-400 text-right group-hover:text-foreground transition-colors">
-                                                    {record.checkIn ? new Date(record.checkIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}
-                                                </td>
-                                            </tr>
-                                        ))
+                                        attendance.sort((a, b) => {
+                                            const dateA = a.clock_in_time || a.created_at || a.date || '';
+                                            const dateB = b.clock_in_time || b.created_at || b.date || '';
+                                            return new Date(dateB).getTime() - new Date(dateA).getTime();
+                                        }).map((record, idx) => {
+                                            const recordKey = record._id || record.id || `rec-${idx}`;
+                                            const dateStr = record.clock_in_time || record.created_at || record.date || '';
+                                            const entryTime = record.clock_in_time || record.checkIn || '';
+                                            const statusNorm = record.status?.toLowerCase() ?? '';
+                                            const isPresent = statusNorm === 'present';
+                                            const isLate = statusNorm === 'late';
+                                            return (
+                                                <tr key={recordKey} className="group hover:bg-gray-50/50 dark:hover:bg-zinc-800/30 transition-all">
+                                                    <td className="px-8 py-6 text-sm font-bold text-foreground">
+                                                        {dateStr ? new Date(dateStr).toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }) : '—'}
+                                                    </td>
+                                                    <td className="px-8 py-6">
+                                                        <span className={cn(
+                                                            "inline-flex items-center rounded-full px-3 py-1 text-[10px] font-black ring-1 ring-inset uppercase tracking-tighter",
+                                                            isPresent
+                                                                ? "bg-green-50 text-green-700 ring-green-600/20 dark:bg-green-900/30 dark:text-green-400"
+                                                                : isLate
+                                                                    ? "bg-amber-50 text-amber-700 ring-amber-600/20 dark:bg-amber-900/30 dark:text-amber-400"
+                                                                    : "bg-red-50 text-red-700 ring-red-600/20 dark:bg-red-900/30 dark:text-red-400"
+                                                        )}>
+                                                            {record.status}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-8 py-6 text-sm font-bold text-gray-600 dark:text-gray-400 text-right group-hover:text-foreground transition-colors">
+                                                        {entryTime ? new Date(entryTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })
                                     ) : (
-                                        <tr>
+                                        <tr key="empty-row">
                                             <td colSpan={3} className="px-8 py-24 text-center">
                                                 <div className="inline-flex p-4 rounded-3xl bg-gray-50 dark:bg-zinc-800 mb-4">
                                                     <Calendar className="h-8 w-8 text-gray-200" />
                                                 </div>
-                                                <p className="text-sm font-bold text-gray-400">No attendance data collected yet.</p>
+                                                <p className="text-sm font-bold text-gray-600 dark:text-gray-400">No attendance data collected yet.</p>
                                             </td>
                                         </tr>
                                     )}
@@ -262,7 +349,7 @@ export default function StaffViewPage({ params }: { params: Promise<{ id: string
                             </div>
                             <div className="space-y-4 max-w-lg">
                                 <h4 className="text-xl font-black text-white tracking-tight">Security & Compliance Policy</h4>
-                                <p className="text-gray-400 text-sm leading-relaxed">
+                                <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
                                     System activity is logged 24/7. All attendance records are cryptographically verified to ensure data integrity.
                                     Late arrivals are automatically flagged by the URNI core.
                                 </p>

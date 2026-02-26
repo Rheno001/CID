@@ -90,12 +90,23 @@ export interface Ticket {
     resolved_at: string | null;
 }
 export interface AttendanceRecord {
-    _id: string;
-    userId: string;
-    date: string;
-    status: 'present' | 'absent' | 'late' | 'excused';
+    // old camelCase shape (kept for compatibility)
+    _id?: string;
+    userId?: string;
+    date?: string;
     checkIn?: string;
     checkOut?: string;
+    // real API snake_case shape
+    id?: string;
+    user_id?: string;
+    branch_id?: string;
+    clock_in_time?: string;
+    clock_out_time?: string | null;
+    created_at?: string;
+    status: string; // "present" | "absent" | "LATE" | "PRESENT" | etc.
+    is_manual_override?: boolean;
+    is_weekend_work?: boolean;
+    hours_worked?: number | null;
 }
 
 export interface AttendanceResponse {

@@ -40,10 +40,10 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
 
     if (error || !staff) {
         return (
-            <div className="rounded-md bg-red-50 p-4 dark:bg-red-900/20">
+            <div className="rounded-md bg-red-50 p-4">
                 <div className="flex">
                     <div className="ml-3">
-                        <h3 className="text-sm font-medium text-red-800 dark:text-red-200">
+                        <h3 className="text-sm font-medium text-red-800">
                             {error || 'Staff member not found'}
                         </h3>
                     </div>
@@ -55,8 +55,8 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
     return (
         <div className="space-y-6">
             <div>
-                <h1 className="text-2xl font-bold leading-7 text-gray-900 dark:text-white sm:truncate sm:text-3xl sm:tracking-tight">Edit Staff</h1>
-                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Update details for {staff.name}.</p>
+                <h1 className="text-2xl font-bold leading-7 text-gray-900 sm:truncate sm:text-3xl sm:tracking-tight">Edit Staff</h1>
+                <p className="mt-1 text-sm text-gray-500">Update details for {staff.name}.</p>
             </div>
 
             <StaffForm initialData={staff} isEdit={true} />

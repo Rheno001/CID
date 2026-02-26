@@ -145,7 +145,7 @@ export default function StaffForm({ initialData, isEdit = false }: StaffFormProp
 
             // Attach the actual compressed File object
             if (formData.profile_picture && formData.profile_picture instanceof File) {
-                formPayload.append('profile_picture', formData.profile_picture);
+                formPayload.append('profile_pic', formData.profile_picture);
             }
 
             // ONLY send password for new registrations

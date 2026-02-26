@@ -152,6 +152,22 @@ export const attendanceApi = {
             throw e;
         }
     },
+    clockIn: async (userId: string): Promise<any> => {
+        try {
+            const response = await api.post('api/attendance/clock-in', { userId });
+            return response.data;
+        } catch (e) {
+            throw e;
+        }
+    },
+    clockOut: async (userId: string): Promise<any> => {
+        try {
+            const response = await api.post('api/attendance/clock-out', { userId });
+            return response.data;
+        } catch (e) {
+            throw e;
+        }
+    },
 };
 
 export const ticketApi = {
