@@ -2,7 +2,7 @@ import axios from 'axios';
 
 import { AuthResponse, Staff, Ticket, Role, Department, Company, Branch, Appraisal } from '@/app/types';
 
-const API_URL = 'https://urni-project-backend-44bx.onrender.com';
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const api = axios.create({
     baseURL: API_URL,

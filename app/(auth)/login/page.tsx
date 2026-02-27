@@ -42,18 +42,11 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="flex min-h-screen bg-gray-100 p-4 sm:p-8 md:p-12 lg:p-24 justify-center items-center">
-            <div className="flex w-full max-w-6xl bg-white rounded-2xl overflow-hidden shadow-2xl h-[800px] max-h-screen">
+        <div className="flex bg-gray-100 p-4 sm:p-8 md:p-12 justify-center items-center">
+            <div className="flex w-full max-w-6xl bg-white rounded-2xl overflow-hidden shadow-2xl h-[700px] max-h-screen m-auto">
 
                 {/* Left Side: Logo & Branding */}
                 <div className="hidden lg:flex lg:w-[45%] flex-col relative bg-white items-center justify-center p-12 lg:border-r border-gray-100">
-
-                    <div className="absolute top-12 left-12 flex items-center gap-3">
-                        <div className="h-10 w-10 bg-orange-500 rounded-lg flex items-center justify-center text-white font-bold text-xl shadow-md">
-                            A
-                        </div>
-                        <span className="text-2xl font-bold text-[#343a40]">Akademi</span>
-                    </div>
 
                     <div className="relative z-10 flex flex-col items-center justify-center w-full max-w-sm">
                         <Image
