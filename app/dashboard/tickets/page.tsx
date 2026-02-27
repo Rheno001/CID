@@ -100,18 +100,18 @@ export default function TicketsPage() {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                 {/* Left Column: List (8/12) */}
                 <div className="lg:col-span-8 space-y-6">
-                    <div className="bg-white dark:bg-zinc-900 rounded-4xl shadow-sm border border-gray-100 dark:border-zinc-800 overflow-hidden min-h-[400px]">
-                        <div className="px-8 py-6 border-b border-gray-50 dark:border-zinc-800 flex items-center justify-between">
+                    <div className="bg-zinc-900 rounded-4xl shadow-sm border border-zinc-800 overflow-hidden min-h-[400px]">
+                        <div className="px-8 py-6 border-zinc-800 flex items-center justify-between">
                             <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
                                 <TicketIcon className="h-5 w-5 text-primary" />
                                 Active Tickets
                             </h2>
-                            <span className="text-[10px] font-black uppercase text-gray-400 tracking-widest bg-gray-50 dark:bg-zinc-800 px-3 py-1 rounded-full">
+                            <span className="text-[10px] font-black uppercase text-gray-400 tracking-widest bg-zinc-800 px-3 py-1 rounded-full">
                                 {tickets.length} Total
                             </span>
                         </div>
 
-                        <div className="divide-y divide-gray-50 dark:divide-zinc-800">
+                        <div className="divide-zinc-800">
                             {tickets.length > 0 ? (
                                 [...tickets].reverse().map((ticket) => {
                                     const targetUser = staff.find(s => (s._id || s.id) === ticket.target_user_id);
@@ -169,7 +169,7 @@ export default function TicketsPage() {
 
                 {/* Right Column: Issue Ticket (4/12) */}
                 <div className="lg:col-span-4 space-y-6">
-                    <div className="bg-foreground dark:bg-zinc-900 rounded-4xl p-8 shadow-2xl text-white">
+                    <div className="bg-zinc-900 rounded-4xl p-8 shadow-2xl text-white">
                         <div className="flex items-center gap-3 mb-8">
                             <div className="h-10 w-10 rounded-xl bg-primary/20 flex items-center justify-center text-primary">
                                 <Plus className="h-6 w-6" />
@@ -253,7 +253,7 @@ export default function TicketsPage() {
                         </form>
                     </div>
 
-                    <div className="bg-white dark:bg-zinc-900 p-8 rounded-4xl border border-gray-100 dark:border-zinc-800 space-y-4">
+                    <div className="bg-zinc-900 p-8 rounded-4xl border border-zinc-800 space-y-4">
                         <div className="flex items-center gap-2">
                             <MessageSquare className="h-4 w-4 text-primary" />
                             <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-400">Notice</h4>

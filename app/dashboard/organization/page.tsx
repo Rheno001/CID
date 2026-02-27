@@ -271,12 +271,12 @@ export default function OrganizationPage() {
     ];
 
     const noBranchesWarning = (
-        <div className="flex items-start gap-3 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 p-4 mb-6">
+        <div className="flex items-start gap-3 rounded-xl bg-amber-900/20 border border-amber-800 p-4 mb-6">
             <AlertTriangle className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
             <div>
-                <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">A branch is required first</p>
-                <p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5">
-                    You must <button onClick={() => setActiveTab('branch')} className="underline font-bold hover:text-amber-900 dark:hover:text-amber-200">create a branch</button> before you can create a company or department.
+                <p className="font-semibold text-amber-300">A branch is required first</p>
+                <p className="text-amber-400 mt-0.5">
+                    You must <button onClick={() => setActiveTab('branch')} className="underline font-bold hover:text-amber-200">create a branch</button> before you can create a company or department.
                 </p>
             </div>
         </div>
@@ -285,12 +285,12 @@ export default function OrganizationPage() {
     return (
         <div className="space-y-6">
             {fetchError && (
-                <div className="flex items-start gap-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-4">
+                <div className="flex items-start gap-3 rounded-xl bg-red-900/20 border border-red-800 p-4">
                     <AlertTriangle className="h-5 w-5 text-red-500 shrink-0 mt-0.5" />
                     <div>
-                        <p className="text-sm font-semibold text-red-800 dark:text-red-300">Error loading data</p>
-                        <p className="text-xs text-red-700 dark:text-red-400 mt-0.5">{fetchError}</p>
-                        <button onClick={fetchData} className="mt-2 text-xs font-bold underline text-red-700 dark:text-red-400">Retry</button>
+                        <p className="font-semibold text-red-300">Error loading data</p>
+                        <p className="text-red-400 mt-0.5">{fetchError}</p>
+                        <button onClick={fetchData} className="mt-2 font-bold underline text-red-400">Retry</button>
                     </div>
                 </div>
             )}
@@ -307,19 +307,19 @@ export default function OrganizationPage() {
                     <span className="h-5 w-5 rounded-full bg-primary text-white flex items-center justify-center text-[10px]">1</span>
                     Branch
                 </span>
-                <span className="flex-1 border-t border-dashed border-gray-300 dark:border-zinc-700" />
+                <span className="flex-1 border-zinc-700" />
                 <span className={cn("flex items-center gap-1.5", branches.length === 0 && "opacity-40")}>
                     <span className="h-5 w-5 rounded-full bg-primary text-white flex items-center justify-center text-[10px]">2</span>
                     Company
                 </span>
-                <span className="flex-1 border-t border-dashed border-gray-300 dark:border-zinc-700" />
+                <span className="flex-1 border-zinc-700" />
                 <span className={cn("flex items-center gap-1.5", branches.length === 0 && "opacity-40")}>
                     <span className="h-5 w-5 rounded-full bg-primary text-white flex items-center justify-center text-[10px]">3</span>
                     Department
                 </span>
             </div>
 
-            <div className="flex space-x-1 rounded-xl bg-gray-100 p-1 dark:bg-zinc-800">
+            <div className="flex space-x-1 rounded-xl p-1 bg-zinc-800">
                 {tabs.map((tab) => {
                     const isActive = activeTab === tab.id;
                     const isLocked = tab.id !== 'branch' && branches.length === 0;
@@ -331,9 +331,9 @@ export default function OrganizationPage() {
                             className={cn(
                                 "flex flex-1 items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium transition-all",
                                 isActive
-                                    ? "bg-white text-foreground shadow-sm dark:bg-zinc-900"
-                                    : "text-muted-foreground hover:bg-white/50 hover:text-foreground dark:hover:bg-zinc-700/50",
-                                isLocked && "opacity-40 cursor-not-allowed hover:bg-transparent dark:hover:bg-transparent"
+                                    ? "text-foreground shadow-sm bg-zinc-900"
+                                    : "text-muted-foreground hover:text-foreground hover:bg-zinc-700/50",
+                                isLocked && "opacity-40 cursor-not-allowed hover:bg-transparent"
                             )}
                         >
                             <tab.icon className="h-4 w-4" />
@@ -343,7 +343,7 @@ export default function OrganizationPage() {
                 })}
             </div>
 
-            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-xs dark:border-zinc-800 dark:bg-zinc-900">
+            <div className="rounded-xl border p-6 shadow-xs border-zinc-800 bg-zinc-900">
 
                 {/* ─── BRANCH TAB ─── */}
                 {activeTab === 'branch' && (
@@ -352,8 +352,8 @@ export default function OrganizationPage() {
                         <div>
                             {branchCreatedSuccessfully ? (
                                 <div className="flex flex-col items-center justify-center gap-6 py-8 text-center">
-                                    <div className="h-16 w-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                                        <svg className="h-8 w-8 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                    <div className="h-16 w-16 rounded-full bg-green-900/30 flex items-center justify-center">
+                                        <svg className="h-8 w-8 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                                         </svg>
                                     </div>
@@ -372,7 +372,7 @@ export default function OrganizationPage() {
                                         </button>
                                         <button
                                             onClick={() => setBranchCreatedSuccessfully(false)}
-                                            className="inline-flex w-full items-center justify-center gap-2 rounded-md border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-zinc-700 transition-all"
+                                            className="inline-flex w-full items-center justify-center gap-2 rounded-md border border-zinc-700 bg-zinc-800 px-4 py-2.5 font-medium text-gray-300 hover:bg-zinc-700 transition-all"
                                         >
                                             + Add Another Branch
                                         </button>
@@ -390,7 +390,7 @@ export default function OrganizationPage() {
                                             value={branchData.name}
                                             onChange={(e) => setBranchData({ ...branchData, name: e.target.value })}
                                             required
-                                            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary dark:bg-zinc-800 dark:border-zinc-700 sm:text-sm p-2 border"
+                                            className="block w-full rounded-md shadow-sm focus:border-primary focus:ring-primary bg-zinc-800 border-zinc-700 sm:text-sm p-2 border"
                                         />
                                     </div>
 
@@ -402,7 +402,7 @@ export default function OrganizationPage() {
                                             value={branchData.address}
                                             onChange={(e) => setBranchData({ ...branchData, address: e.target.value })}
                                             required
-                                            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary dark:bg-zinc-800 dark:border-zinc-700 sm:text-sm p-2 border"
+                                            className="block w-full rounded-md shadow-sm focus:border-primary focus:ring-primary bg-zinc-800 border-zinc-700 sm:text-sm p-2 border"
                                         />
                                     </div>
 
@@ -414,7 +414,7 @@ export default function OrganizationPage() {
                                             value={branchData.location_city}
                                             onChange={(e) => setBranchData({ ...branchData, location_city: e.target.value })}
                                             required
-                                            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary dark:bg-zinc-800 dark:border-zinc-700 sm:text-sm p-2 border"
+                                            className="block w-full rounded-md shadow-sm focus:border-primary focus:ring-primary bg-zinc-800 border-zinc-700 sm:text-sm p-2 border"
                                         />
                                     </div>
 
@@ -426,7 +426,7 @@ export default function OrganizationPage() {
                                                 placeholder="0.000000"
                                                 value={branchData.gps_lat}
                                                 onChange={(e) => setBranchData({ ...branchData, gps_lat: e.target.value })}
-                                                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary dark:bg-zinc-800 dark:border-zinc-700 sm:text-sm p-2 border"
+                                                className="block w-full rounded-md shadow-sm focus:border-primary focus:ring-primary bg-zinc-800 border-zinc-700 sm:text-sm p-2 border"
                                             />
                                         </div>
                                         <div className="space-y-2">
@@ -436,7 +436,7 @@ export default function OrganizationPage() {
                                                 placeholder="0.000000"
                                                 value={branchData.gps_long}
                                                 onChange={(e) => setBranchData({ ...branchData, gps_long: e.target.value })}
-                                                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary dark:bg-zinc-800 dark:border-zinc-700 sm:text-sm p-2 border"
+                                                className="block w-full rounded-md shadow-sm focus:border-primary focus:ring-primary bg-zinc-800 border-zinc-700 sm:text-sm p-2 border"
                                             />
                                         </div>
                                     </div>
@@ -449,14 +449,14 @@ export default function OrganizationPage() {
                                             value={branchData.radius_meters}
                                             onChange={(e) => setBranchData({ ...branchData, radius_meters: e.target.value })}
                                             required
-                                            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary dark:bg-zinc-800 dark:border-zinc-700 sm:text-sm p-2 border"
+                                            className="block w-full rounded-md shadow-sm focus:border-primary focus:ring-primary bg-zinc-800 border-zinc-700 sm:text-sm p-2 border"
                                         />
                                     </div>
 
                                     <button
                                         type="button"
                                         onClick={getLocation}
-                                        className="inline-flex w-full items-center justify-center gap-2 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 dark:bg-zinc-800 dark:border-zinc-700 dark:text-gray-300 dark:hover:bg-zinc-700"
+                                        className="inline-flex w-full items-center justify-center gap-2 rounded-md border px-4 py-2 font-medium shadow-sm bg-zinc-800 border-zinc-700 text-gray-300 hover:bg-zinc-700"
                                     >
                                         <Map className="h-4 w-4" />
                                         Use My Location
@@ -479,9 +479,9 @@ export default function OrganizationPage() {
                             <h3 className="text-sm font-bold uppercase tracking-widest text-gray-400">Existing Branches</h3>
                             <div className="grid gap-4">
                                 {branches.map((branch, index) => (
-                                    <div key={branch._id || `list-branch-${index}`} className="flex items-center justify-between gap-4 p-4 rounded-2xl bg-gray-50 dark:bg-zinc-800/50 border border-transparent hover:border-gray-200 transition-all">
+                                    <div key={branch._id || `list-branch-${index}`} className="flex items-center justify-between gap-4 p-4 rounded-2xl bg-zinc-800/50 border border-transparent hover:border-gray-200 transition-all">
                                         <div className="flex items-center gap-4">
-                                            <div className="h-10 w-10 rounded-xl bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 flex items-center justify-center text-primary font-black shadow-sm">
+                                            <div className="h-10 w-10 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-primary font-black shadow-sm">
                                                 <MapPin className="h-4 w-4" />
                                             </div>
                                             <div>
@@ -491,7 +491,7 @@ export default function OrganizationPage() {
                                         </div>
                                         <button
                                             onClick={() => handleDeleteBranch(branch._id)}
-                                            className="p-2 rounded-xl text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-all"
+                                            className="p-2 rounded-xl text-gray-400 hover:text-red-500 hover:bg-red-950/30 transition-all"
                                             title="Delete Branch"
                                         >
                                             <Trash2 className="h-4 w-4" />
@@ -524,7 +524,7 @@ export default function OrganizationPage() {
                                     onChange={(e) => setCompanyData({ ...companyData, branch_id: e.target.value })}
                                     required
                                     disabled={branches.length === 0}
-                                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary dark:bg-zinc-800 dark:border-zinc-700 sm:text-sm p-2 border disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="block w-full rounded-md shadow-sm focus:border-primary focus:ring-primary bg-zinc-800 border-zinc-700 sm:text-sm p-2 border disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     <option value="">Select a branch...</option>
                                     {branches.map((branch, index) => (
@@ -545,7 +545,7 @@ export default function OrganizationPage() {
                                     onChange={(e) => setCompanyData({ ...companyData, name: e.target.value })}
                                     required
                                     disabled={branches.length === 0}
-                                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary dark:bg-zinc-800 dark:border-zinc-700 sm:text-sm p-2 border disabled:opacity-50"
+                                    className="block w-full rounded-md shadow-sm focus:border-primary focus:ring-primary bg-zinc-800 border-zinc-700 sm:text-sm p-2 border disabled:opacity-50"
                                 />
                             </div>
 
@@ -558,7 +558,7 @@ export default function OrganizationPage() {
                                     onChange={(e) => setCompanyData({ ...companyData, abbreviation: e.target.value })}
                                     required
                                     disabled={branches.length === 0}
-                                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary dark:bg-zinc-800 dark:border-zinc-700 sm:text-sm p-2 border disabled:opacity-50"
+                                    className="block w-full rounded-md shadow-sm focus:border-primary focus:ring-primary bg-zinc-800 border-zinc-700 sm:text-sm p-2 border disabled:opacity-50"
                                 />
                                 <p className="text-xs text-muted-foreground">A short code or acronym for the company</p>
                             </div>
@@ -570,7 +570,7 @@ export default function OrganizationPage() {
                                     accept="image/*"
                                     disabled={branches.length === 0}
                                     onChange={(e) => setCompanyData({ ...companyData, logo: e.target.files?.[0] || null })}
-                                    className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-primary file:text-white hover:file:bg-primary/90 dark:text-gray-400 disabled:opacity-50"
+                                    className="block w-full file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-primary file:text-white hover:file:bg-primary/90 text-gray-400 disabled:opacity-50"
                                 />
                                 <p className="text-xs text-muted-foreground">Upload a logo image for the company</p>
                             </div>
@@ -584,7 +584,7 @@ export default function OrganizationPage() {
                                     onChange={(e) => setCompanyData({ ...companyData, address: e.target.value })}
                                     required
                                     disabled={branches.length === 0}
-                                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary dark:bg-zinc-800 dark:border-zinc-700 sm:text-sm p-2 border disabled:opacity-50"
+                                    className="block w-full rounded-md shadow-sm focus:border-primary focus:ring-primary bg-zinc-800 border-zinc-700 sm:text-sm p-2 border disabled:opacity-50"
                                 />
                             </div>
 
@@ -605,9 +605,9 @@ export default function OrganizationPage() {
                             <h3 className="text-sm font-bold uppercase tracking-widest text-gray-400">Existing Companies</h3>
                             <div className="grid gap-4">
                                 {companies.map((company, index) => (
-                                    <div key={company._id || `list-comp-${index}`} className="flex items-center justify-between p-4 rounded-2xl bg-gray-50 dark:bg-zinc-800/50 border border-transparent hover:border-gray-200 transition-all">
+                                    <div key={company._id || `list-comp-${index}`} className="flex items-center justify-between p-4 rounded-2xl bg-zinc-800/50 border border-transparent hover:border-gray-200 transition-all">
                                         <div className="flex items-center gap-4">
-                                            <div className="h-10 w-10 rounded-xl bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 flex items-center justify-center text-primary font-black shadow-sm">
+                                            <div className="h-10 w-10 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-primary font-black shadow-sm">
                                                 {company.name[0]}
                                             </div>
                                             <div>
@@ -617,7 +617,7 @@ export default function OrganizationPage() {
                                         </div>
                                         <button
                                             onClick={() => handleDeleteCompany(company._id)}
-                                            className="p-2 rounded-xl text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-all"
+                                            className="p-2 rounded-xl text-gray-400 hover:text-red-500 hover:bg-red-950/30 transition-all"
                                             title="Delete Company"
                                         >
                                             <Trash2 className="h-4 w-4" />
@@ -648,7 +648,7 @@ export default function OrganizationPage() {
                                 onChange={(e) => setDepartmentData({ ...departmentData, name: e.target.value })}
                                 required
                                 disabled={branches.length === 0}
-                                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary dark:bg-zinc-800 dark:border-zinc-700 sm:text-sm p-2 border disabled:opacity-50"
+                                className="block w-full rounded-md shadow-sm focus:border-primary focus:ring-primary bg-zinc-800 border-zinc-700 sm:text-sm p-2 border disabled:opacity-50"
                             />
                         </div>
 
@@ -662,7 +662,7 @@ export default function OrganizationPage() {
                                 onChange={(e) => setDepartmentData({ ...departmentData, branch_id: e.target.value })}
                                 required
                                 disabled={branches.length === 0}
-                                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary dark:bg-zinc-800 dark:border-zinc-700 sm:text-sm p-2 border disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="block w-full rounded-md shadow-sm focus:border-primary focus:ring-primary bg-zinc-800 border-zinc-700 sm:text-sm p-2 border disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 <option value="">Select a branch...</option>
                                 {branches.map((branch, index) => (
@@ -681,7 +681,7 @@ export default function OrganizationPage() {
                                 onChange={(e) => setDepartmentData({ ...departmentData, company_id: e.target.value, head_id: '' })}
                                 required
                                 disabled={branches.length === 0}
-                                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary dark:bg-zinc-800 dark:border-zinc-700 sm:text-sm p-2 border disabled:opacity-50"
+                                className="block w-full rounded-md shadow-sm focus:border-primary focus:ring-primary bg-zinc-800 border-zinc-700 sm:text-sm p-2 border disabled:opacity-50"
                             >
                                 <option value="">Select a company...</option>
                                 {companies.map((company, index) => (
@@ -698,7 +698,7 @@ export default function OrganizationPage() {
                                 value={departmentData.head_id}
                                 onChange={(e) => setDepartmentData({ ...departmentData, head_id: e.target.value })}
                                 disabled={!departmentData.company_id || companyEmployees.length === 0}
-                                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary dark:bg-zinc-800 dark:border-zinc-700 sm:text-sm p-2 border disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="block w-full rounded-md shadow-sm focus:border-primary focus:ring-primary bg-zinc-800 border-zinc-700 sm:text-sm p-2 border disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 <option value="">
                                     {!departmentData.company_id

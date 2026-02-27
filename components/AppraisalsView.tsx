@@ -60,18 +60,18 @@ export default function AppraisalsView({ userId, userName }: AppraisalsViewProps
     };
 
     return (
-        <div className="bg-white dark:bg-zinc-900 rounded-4xl shadow-sm border border-gray-100 dark:border-zinc-800 overflow-hidden flex flex-col h-full">
+        <div className="bg-zinc-900 rounded-4xl shadow-sm border border-zinc-800 overflow-hidden flex flex-col h-full">
             {/* Header */}
-            <div className="px-8 py-8 flex items-center justify-between flex-wrap gap-4 border-b border-gray-100 dark:border-zinc-800">
+            <div className="px-8 py-8 flex items-center justify-between flex-wrap gap-4 border-zinc-800">
                 <div className="flex items-center gap-4">
-                    <div className="h-12 w-12 rounded-2xl bg-orange-50 dark:bg-orange-900/10 flex items-center justify-center text-orange-600 dark:text-orange-400">
+                    <div className="h-12 w-12 rounded-2xl bg-orange-900/10 flex items-center justify-center text-orange-400">
                         <TrendingUp className="h-6 w-6" />
                     </div>
                     <div>
                         <h2 className="text-2xl font-black text-foreground tracking-tight">Monthly Appraisals</h2>
                         {appraisals.length > 0 && (
                             <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1">
-                                Total Logs: <span className="text-orange-600 dark:text-orange-400">{appraisals.length}</span>
+                                Total Logs: <span className="text-orange-400">{appraisals.length}</span>
                             </p>
                         )}
                     </div>
@@ -81,7 +81,7 @@ export default function AppraisalsView({ userId, userName }: AppraisalsViewProps
                     <select
                         value={month}
                         onChange={(e) => setMonth(Number(e.target.value))}
-                        className="h-10 rounded-xl border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm font-bold focus:ring-orange-500 focus:border-orange-500 cursor-pointer pl-3 pr-8"
+                        className="h-10 rounded-xl border-zinc-700 bg-zinc-800 text-sm font-bold focus:ring-orange-500 focus:border-orange-500 cursor-pointer pl-3 pr-8"
                     >
                         {Array.from({ length: 12 }, (_, i) => i + 1).map(m => (
                             <option key={m} value={m}>{new Date(0, m - 1).toLocaleString('default', { month: 'short' })}</option>
@@ -90,7 +90,7 @@ export default function AppraisalsView({ userId, userName }: AppraisalsViewProps
                     <select
                         value={year}
                         onChange={(e) => setYear(Number(e.target.value))}
-                        className="h-10 rounded-xl border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm font-bold focus:ring-orange-500 focus:border-orange-500 cursor-pointer pl-3 pr-8"
+                        className="h-10 rounded-xl border-zinc-700 bg-zinc-800 text-sm font-bold focus:ring-orange-500 focus:border-orange-500 cursor-pointer pl-3 pr-8"
                     >
                         {Array.from({ length: 5 }, (_, i) => today.getFullYear() - i + 1).map(y => (
                             <option key={y} value={y}>{y}</option>
@@ -112,14 +112,14 @@ export default function AppraisalsView({ userId, userName }: AppraisalsViewProps
             <div className="flex-1 overflow-x-auto min-h-[300px]">
                 <table className="w-full text-left border-collapse">
                     <thead>
-                        <tr className="bg-gray-50/50 dark:bg-zinc-800/30">
+                        <tr className="bg-zinc-800/30">
                             <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest w-32">Date</th>
                             <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest w-24">Workplace</th>
                             <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Achievements</th>
                             <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Challenges</th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-100 dark:divide-zinc-800">
+                    <tbody className="divide-zinc-800">
                         {isLoading ? (
                             <tr>
                                 <td colSpan={4} className="px-8 py-32 text-center">
@@ -132,7 +132,7 @@ export default function AppraisalsView({ userId, userName }: AppraisalsViewProps
                         ) : error ? (
                             <tr>
                                 <td colSpan={4} className="px-8 py-24 text-center">
-                                    <div className="inline-flex p-3 rounded-2xl bg-red-50 dark:bg-red-900/20 mb-3">
+                                    <div className="inline-flex p-3 rounded-2xl bg-red-900/20 mb-3">
                                         <TrendingUp className="h-6 w-6 text-red-500" />
                                     </div>
                                     <p className="text-sm font-bold text-red-500">{error}</p>
@@ -140,7 +140,7 @@ export default function AppraisalsView({ userId, userName }: AppraisalsViewProps
                             </tr>
                         ) : appraisals.length > 0 ? (
                             appraisals.map((appraisal, index) => (
-                                <tr key={index} className="group hover:bg-gray-50/50 dark:hover:bg-zinc-800/30 transition-all">
+                                <tr key={index} className="group hover:bg-zinc-800/30 transition-all">
                                     <td className="px-8 py-6 text-sm font-bold text-foreground align-top">
                                         {new Date(appraisal.date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
                                         <div className="text-[10px] text-gray-400 font-medium mt-1">
@@ -151,16 +151,16 @@ export default function AppraisalsView({ userId, userName }: AppraisalsViewProps
                                         <span className={cn(
                                             "inline-flex items-center rounded-lg px-2 py-1 text-[10px] font-black uppercase tracking-wider",
                                             appraisal.workplace === 'office'
-                                                ? "bg-blue-50 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                                                : "bg-purple-50 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
+                                                ? "bg-green-900/30 text-green-400"
+                                                : "bg-yellow-900/30 text-yellow-400"
                                         )}>
                                             {appraisal.workplace}
                                         </span>
                                     </td>
-                                    <td className="px-8 py-6 text-sm text-gray-600 dark:text-gray-300 font-medium align-top min-w-[200px]">
+                                    <td className="px-8 py-6 text-gray-300 font-medium align-top min-w-[200px]">
                                         {appraisal.achievements}
                                     </td>
-                                    <td className="px-8 py-6 text-sm text-gray-600 dark:text-gray-300 font-medium align-top min-w-[200px]">
+                                    <td className="px-8 py-6 text-gray-300 font-medium align-top min-w-[200px]">
                                         {appraisal.challenges}
                                     </td>
                                 </tr>
@@ -168,7 +168,7 @@ export default function AppraisalsView({ userId, userName }: AppraisalsViewProps
                         ) : (
                             <tr>
                                 <td colSpan={4} className="px-8 py-24 text-center">
-                                    <div className="inline-flex p-4 rounded-3xl bg-gray-50 dark:bg-zinc-800 mb-4">
+                                    <div className="inline-flex p-4 rounded-3xl bg-zinc-800 mb-4">
                                         <Calendar className="h-8 w-8 text-gray-200" />
                                     </div>
                                     <p className="text-sm font-bold text-gray-400">No appraisals recorded for {new Date(0, month - 1).toLocaleString('default', { month: 'long' })} {year}.</p>

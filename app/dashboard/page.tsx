@@ -155,11 +155,11 @@ export default function DashboardPage() {
                 {/* Left Column: Analytics & Staff (8/12) */}
                 <div className="lg:col-span-8 space-y-8">
                     {/* Weekly Attendance Pie Chart */}
-                    <div className="bg-white dark:bg-zinc-900 rounded-4xl p-8 shadow-sm border border-gray-100 dark:border-zinc-800 relative overflow-hidden group">
+                    <div className="bg-zinc-900 rounded-4xl p-8 shadow-sm border border-zinc-800 relative overflow-hidden group">
                         <div className="flex justify-between items-start relative z-10">
                             <div className="space-y-4">
                                 <div className="flex items-center gap-3">
-                                    <div className="bg-gray-100 dark:bg-zinc-800 p-2.5 rounded-2xl">
+                                    <div className="bg-zinc-800 p-2.5 rounded-2xl">
                                         <BarChart3 className="h-5 w-5 text-foreground" />
                                     </div>
                                     <h2 className="text-3xl font-bold tracking-tight text-foreground">Weekly Attendance</h2>
@@ -171,7 +171,7 @@ export default function DashboardPage() {
                             <div className="relative">
                                 <button
                                     onClick={() => setShowWeekPicker(!showWeekPicker)}
-                                    className="bg-gray-50 dark:bg-zinc-800 px-4 py-2 rounded-xl text-sm font-bold border border-gray-200 dark:border-zinc-700 flex items-center gap-2 hover:bg-white dark:hover:bg-zinc-700 transition-all"
+                                    className="bg-zinc-800 px-4 py-2 rounded-xl text-sm font-bold border border-zinc-700 flex items-center gap-2 hover:bg-zinc-700 transition-all"
                                 >
                                     {(() => {
                                         const getWeekStart = (date: Date) => {
@@ -200,7 +200,7 @@ export default function DashboardPage() {
                                             className="fixed inset-0 z-10"
                                             onClick={() => setShowWeekPicker(false)}
                                         />
-                                        <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-zinc-900 rounded-2xl shadow-xl border border-gray-200 dark:border-zinc-800 p-4 z-20">
+                                        <div className="absolute right-0 mt-2 w-64 bg-zinc-900 rounded-2xl shadow-xl border border-zinc-800 p-4 z-20">
                                             <h4 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-3">Select Week</h4>
                                             <div className="space-y-2">
                                                 {[0, -1, -2, -3].map((weekOffset) => {
@@ -234,7 +234,7 @@ export default function DashboardPage() {
                                                                 "w-full text-left px-3 py-2 rounded-xl text-sm font-bold transition-all",
                                                                 isSelected
                                                                     ? "bg-primary text-white"
-                                                                    : "hover:bg-gray-50 dark:hover:bg-zinc-800 text-foreground"
+                                                                    : "hover:bg-zinc-800 text-foreground"
                                                             )}
                                                         >
                                                             <div className="flex justify-between items-center">
@@ -328,7 +328,7 @@ export default function DashboardPage() {
                                             <span className="text-xs font-black text-gray-400">
                                                 {item.value}%
                                             </span>
-                                            <div className="w-20 h-1.5 bg-gray-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+                                            <div className="w-20 h-1.5 bg-zinc-800 rounded-full overflow-hidden">
                                                 <div
                                                     className={cn("h-full rounded-full transition-all duration-700", item.color)}
                                                     style={{ width: `${item.value}%` }}
@@ -342,10 +342,10 @@ export default function DashboardPage() {
                     </div>
 
                     {/* Latest Staff Card (Full Width in Left Column now) */}
-                    <div className="bg-white dark:bg-zinc-900 rounded-4xl p-8 shadow-sm border border-gray-100 dark:border-zinc-800">
+                    <div className="bg-zinc-900 rounded-4xl p-8 shadow-sm border border-zinc-800">
                         <div className="flex justify-between items-center mb-8">
                             <div className="flex items-center gap-3">
-                                <div className="bg-orange-50 dark:bg-orange-950/30 p-2 rounded-xl">
+                                <div className="bg-orange-950/30 p-2 rounded-xl">
                                     <Users className="h-5 w-5 text-primary" />
                                 </div>
                                 <h3 className="text-2xl font-black text-foreground tracking-tight">Latest Staff Registrations</h3>
@@ -359,10 +359,10 @@ export default function DashboardPage() {
                                 <Link
                                     key={i}
                                     href={`/dashboard/staff/view/${person._id || person.id}`}
-                                    className="flex items-center justify-between p-4 rounded-3xl bg-gray-50 dark:bg-zinc-800/50 transition-all hover:scale-[1.02] hover:bg-white dark:hover:bg-zinc-800 shadow-xs hover:shadow-md border border-transparent hover:border-gray-100"
+                                    className="flex items-center justify-between p-4 rounded-3xl bg-zinc-800/50 transition-all hover:scale-[1.02] hover:bg-zinc-800 shadow-xs hover:shadow-md border border-transparent hover:border-gray-100"
                                 >
                                     <div className="flex items-center gap-4">
-                                        <div className="h-12 w-12 rounded-2xl bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 flex items-center justify-center text-primary font-black shadow-sm group-hover:bg-primary group-hover:text-white transition-colors">
+                                        <div className="h-12 w-12 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-primary font-black shadow-sm group-hover:bg-primary group-hover:text-white transition-colors">
                                             {person.name[0]}
                                         </div>
                                         <div>
@@ -371,7 +371,7 @@ export default function DashboardPage() {
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <span className="text-[10px] bg-white dark:bg-zinc-900 text-gray-500 px-3 py-1 rounded-full border border-gray-100 dark:border-zinc-700 font-bold">
+                                        <span className="text-[10px] bg-zinc-900 text-gray-500 px-3 py-1 rounded-full border border-zinc-700 font-bold">
                                             {person.status}
                                         </span>
                                         <Plus className="h-4 w-4 text-gray-300" />
@@ -384,10 +384,10 @@ export default function DashboardPage() {
                         </div>
                     </div>
 
-                    <div className="bg-white dark:bg-zinc-900 rounded-4xl p-8 shadow-sm border border-gray-100 dark:border-zinc-800">
+                    <div className="bg-zinc-900 rounded-4xl p-8 shadow-sm border border-zinc-800">
                         <div className="flex justify-between items-center mb-8">
                             <div className="flex items-center gap-3">
-                                <div className="bg-red-50 dark:bg-red-950/30 p-2 rounded-xl">
+                                <div className="bg-red-950/30 p-2 rounded-xl">
                                     <TicketIcon className="h-5 w-5 text-red-500" />
                                 </div>
                                 <h3 className="text-2xl font-black text-foreground tracking-tight">Recent Disciplinary Tickets</h3>
@@ -398,7 +398,7 @@ export default function DashboardPage() {
                         </div>
                         <div className="space-y-4">
                             {latestTickets.map((ticket, i) => (
-                                <div key={i} className="flex items-center justify-between p-5 rounded-3xl bg-gray-50 dark:bg-zinc-800/50 border border-transparent hover:border-red-100 transition-all">
+                                <div key={i} className="flex items-center justify-between p-5 rounded-3xl bg-zinc-800/50 border border-transparent hover:border-red-100 transition-all">
                                     <div className="flex items-start gap-4">
                                         <div className="mt-1">
                                             <AlertCircle className={cn(
@@ -411,7 +411,7 @@ export default function DashboardPage() {
                                             <p className="text-xs text-gray-400 mt-2 line-clamp-1">{ticket.description}</p>
                                         </div>
                                     </div>
-                                    <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 bg-white dark:bg-zinc-900 px-3 py-1 rounded-full border border-gray-100 dark:border-zinc-800">
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 bg-zinc-900 px-3 py-1 rounded-full border border-zinc-800">
                                         LVL {ticket.severity}
                                     </span>
                                 </div>
@@ -427,20 +427,20 @@ export default function DashboardPage() {
 
                 {/* Right Column: Organizational Breakdown (4/12) */}
                 <div className="lg:col-span-4 space-y-8">
-                    <div className="bg-white dark:bg-zinc-900 rounded-4xl p-8 shadow-sm border border-gray-100 dark:border-zinc-800 h-full flex flex-col">
+                    <div className="bg-zinc-900 rounded-4xl p-8 shadow-sm border border-zinc-800 flex flex-col h-fit">
                         <div className="flex justify-between items-center mb-10">
                             <div className="flex items-center gap-3">
-                                <div className="bg-gray-100 dark:bg-zinc-800 p-2 rounded-xl text-foreground">
+                                <div className="bg-zinc-800 p-2 rounded-xl text-foreground">
                                     <BarChart3 className="h-5 w-5" />
                                 </div>
                                 <h2 className="text-2xl font-black text-foreground tracking-tight">Departments</h2>
                             </div>
-                            <div className="text-[10px] font-black uppercase text-gray-400 tracking-widest bg-gray-50 dark:bg-zinc-800 px-3 py-1 rounded-full">
+                            <div className="text-[10px] font-black uppercase text-gray-400 tracking-widest bg-zinc-800 px-3 py-1 rounded-full">
                                 {departmentStats.length} Groups
                             </div>
                         </div>
 
-                        <div className="space-y-6 flex-1">
+                        <div className="space-y-6">
                             {departmentStats.map((item, i) => (
                                 <div key={i} className="group cursor-pointer">
                                     <div className="flex items-start gap-4">
@@ -452,7 +452,7 @@ export default function DashboardPage() {
                                                 <h4 className="font-bold text-sm text-foreground group-hover:text-primary transition-colors">{item.name}</h4>
                                                 <span className="text-lg font-black text-foreground">{item.count}</span>
                                             </div>
-                                            <div className="w-full h-1.5 bg-gray-100 dark:bg-zinc-800 rounded-full overflow-hidden mt-2">
+                                            <div className="w-full h-1.5 bg-zinc-800 rounded-full overflow-hidden mt-2">
                                                 <div
                                                     className={cn("h-full rounded-full transition-all duration-700", item.color)}
                                                     style={{ width: `${(item.count / staffCount) * 100}%` }}
@@ -464,14 +464,14 @@ export default function DashboardPage() {
                                         </div>
                                     </div>
                                     {i < departmentStats.length - 1 && (
-                                        <div className="mt-6 border-b border-gray-50 dark:border-zinc-800" />
+                                        <div className="mt-6 border-zinc-800" />
                                     )}
                                 </div>
                             ))}
                         </div>
 
                         {/* Attendance Progress Minimalist Card (at bottom of Breakdown) */}
-                        <div className="mt-12 pt-10 border-t border-gray-100 dark:border-zinc-800">
+                        <div className="mt-12 pt-10 border-zinc-800">
                             <div className="flex justify-between items-center mb-6">
                                 <h3 className="font-bold text-[10px] uppercase tracking-widest text-gray-400">Total Statistics</h3>
                                 <button className="text-[10px] bg-orange-50 text-primary px-3 py-1 rounded-full font-black flex items-center gap-1 uppercase">Today</button>
@@ -488,7 +488,7 @@ export default function DashboardPage() {
                             </div>
                             <div className="mt-8 flex items-end gap-1.5 h-12">
                                 {[1, 2, 3, 2, 4, 3, 5, 2, 3, 4, 3].map((h, i) => (
-                                    <div key={i} className="flex-1 bg-gray-100 dark:bg-zinc-800 rounded-full hover:bg-primary transition-colors cursor-pointer" style={{ height: `${h * 20}%` }} />
+                                    <div key={i} className="flex-1 bg-zinc-800 rounded-full hover:bg-primary transition-colors cursor-pointer" style={{ height: `${h * 20}%` }} />
                                 ))}
                             </div>
                         </div>

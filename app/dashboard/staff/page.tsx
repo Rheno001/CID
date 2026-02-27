@@ -78,15 +78,15 @@ export default function StaffPage() {
                     <Loader2 className="h-10 w-10 animate-spin text-primary" />
                 </div>
             ) : error ? (
-                <div className="rounded-3xl bg-red-50 p-6 border border-red-100 dark:bg-red-950/20 dark:border-red-900/30">
+                <div className="rounded-3xl p-6 border bg-red-950/20 border-red-900/30">
                     <div className="flex gap-3">
                         <div className="h-2 w-2 rounded-full bg-red-500 mt-1.5" />
-                        <h3 className="text-sm font-bold text-red-800 dark:text-red-200">{error}</h3>
+                        <h3 className="font-bold text-red-200">{error}</h3>
                     </div>
                 </div>
             ) : (
-                <div className="bg-white dark:bg-zinc-900 rounded-4xl shadow-sm border border-gray-100 dark:border-zinc-800 overflow-hidden">
-                    <ul role="list" className="divide-y divide-gray-100 dark:divide-zinc-800">
+                <div className="bg-zinc-900 rounded-4xl shadow-sm border border-zinc-800 overflow-hidden">
+                    <ul role="list" className="divide-zinc-800">
                         {Array.isArray(staff) && staff.map((person) => {
                             const personId = person._id || person.id || '';
                             const deptName = (typeof person.department === 'object' && person.department !== null)
@@ -94,14 +94,14 @@ export default function StaffPage() {
                                 : (person.department || 'General');
 
                             return (
-                                <li key={personId} className="group transition-colors hover:bg-gray-50/50 dark:hover:bg-zinc-800/50">
+                                <li key={personId} className="group transition-colors hover:bg-zinc-800/50">
                                     <div className="flex flex-col sm:flex-row sm:items-center gap-4 px-6 py-6 lg:px-8">
 
                                         <Link
                                             href={`/dashboard/staff/view/${personId}`}
                                             className="flex items-center gap-4 flex-1 cursor-pointer"
                                         >
-                                            <div className="h-14 w-14 rounded-2xl bg-gray-100 dark:bg-zinc-800 flex items-center justify-center text-primary font-black text-xl shadow-inner group-hover:scale-110 transition-transform">
+                                            <div className="h-14 w-14 rounded-2xl bg-zinc-800 flex items-center justify-center text-primary font-black text-xl shadow-inner group-hover:scale-110 transition-transform">
                                                 {person.name[0]}
                                             </div>
                                             <div className="min-w-0 flex-1">
@@ -110,8 +110,8 @@ export default function StaffPage() {
                                                     <span className={cn(
                                                         "inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-bold ring-1 ring-inset uppercase tracking-wider",
                                                         person.status === 'active'
-                                                            ? "bg-green-50 text-green-700 ring-green-600/20 dark:bg-green-900/30 dark:text-green-400"
-                                                            : "bg-gray-50 text-gray-500 ring-gray-400/20 dark:bg-zinc-800 dark:text-gray-400"
+                                                            ? "ring-green-600/20 bg-green-900/30 text-green-400"
+                                                            : "ring-gray-400/20 bg-zinc-800 text-gray-400"
                                                     )}>
                                                         {person.status}
                                                     </span>
@@ -128,14 +128,14 @@ export default function StaffPage() {
                                         <div className="flex items-center gap-2 sm:ml-auto">
                                             <Link
                                                 href={`/dashboard/staff/view/${personId}`}
-                                                className="p-3 rounded-2xl bg-gray-50 text-orange-600 hover:bg-orange-600 hover:text-white dark:bg-zinc-800 dark:hover:bg-orange-600 transition-all shadow-sm"
+                                                className="p-3 rounded-2xl text-orange-600 hover:text-white bg-zinc-800 hover:bg-orange-600 transition-all shadow-sm"
                                                 title="View History"
                                             >
                                                 <Clock className="h-5 w-5" />
                                             </Link>
                                             <Link
                                                 href={`/dashboard/staff/${personId}`}
-                                                className="p-3 rounded-2xl bg-gray-50 text-gray-500 hover:bg-zinc-800 hover:text-white dark:bg-zinc-800 dark:hover:bg-zinc-700 transition-all shadow-sm"
+                                                className="p-3 rounded-2xl text-gray-500 hover:text-white bg-zinc-800 hover:bg-zinc-700 transition-all shadow-sm"
                                                 title="Edit Profile"
                                             >
                                                 <Pencil className="h-5 w-5" />
@@ -143,7 +143,7 @@ export default function StaffPage() {
                                             <button
                                                 onClick={() => handleDelete(personId)}
                                                 disabled={deletingId === personId}
-                                                className="p-3 rounded-2xl bg-gray-50 text-red-400 hover:bg-red-500 hover:text-white dark:bg-zinc-800 dark:hover:bg-red-600 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                                                className="p-3 rounded-2xl text-red-400 hover:text-white bg-zinc-800 hover:bg-red-600 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                                                 title="Delete Record"
                                             >
                                                 {deletingId === personId ? (
@@ -159,7 +159,7 @@ export default function StaffPage() {
                         })}
                         {staff.length === 0 && (
                             <li className="px-6 py-20 text-center">
-                                <div className="inline-flex p-4 rounded-3xl bg-gray-50 dark:bg-zinc-800 mb-4">
+                                <div className="inline-flex p-4 rounded-3xl bg-zinc-800 mb-4">
                                     <Users className="h-10 w-10 text-gray-300" />
                                 </div>
                                 <h3 className="text-lg font-bold text-foreground">No team members yet</h3>

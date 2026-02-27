@@ -48,12 +48,12 @@ export default function Modal({ isOpen, onClose, children, className }: ModalPro
             onClick={handleOverlayClick}
         >
             <div className={cn(
-                "relative bg-white dark:bg-zinc-900 rounded-3xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto animate-in zoom-in-95 duration-200 border border-gray-100 dark:border-zinc-800",
+                "relative bg-zinc-900 rounded-3xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto animate-in zoom-in-95 duration-200 border border-zinc-800",
                 className
             )}>
                 <button
                     onClick={onClose}
-                    className="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors z-10"
+                    className="absolute top-4 right-4 p-2 rounded-full hover:bg-zinc-800 transition-colors z-10"
                 >
                     <X className="h-5 w-5 text-gray-500" />
                 </button>

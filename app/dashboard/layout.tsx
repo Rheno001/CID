@@ -17,7 +17,6 @@ import {
 } from 'lucide-react';
 import TBGLogo from '@/assets/TBG.webp';
 import { User } from '@/app/types';
-import { ThemeToggle } from '@/components/ThemeToggle';
 
 export default function DashboardLayout({
     children,
@@ -79,7 +78,7 @@ export default function DashboardLayout({
                                 alt="TBG Logo"
                                 height={40}
                                 width={120} // Approximate width, it will maintain aspect ratio due to height and style="auto" usually, strictly explicit width/height helps avoid CLS.
-                                className="h-10 w-auto object-contain transition-transform group-hover:scale-105"
+                                className="h-12 w-auto object-contain transition-transform group-hover:scale-105"
                                 priority
                             />
                         </div>
@@ -94,11 +93,11 @@ export default function DashboardLayout({
                                     key={item.name}
                                     href={item.href}
                                     className={cn(
- "px-4 py-2 text-sm font-semibold rounded-xl transition-all duration-200",
- isActive
- ? "text-foreground bg-white shadow-sm ring-1 ring-gray-200 "
- : "text-gray-500 hover:text-foreground hover:bg-gray-100/50 "
- )}
+                                        "px-4 py-2 text-sm font-semibold rounded-xl transition-all duration-200",
+                                        isActive
+                                            ? "text-foreground shadow-sm ring-1 ring-gray-200 "
+                                            : "text-gray-500 hover:text-foreground hover:bg-gray-100/50 "
+                                    )}
                                 >
                                     {item.name}
                                 </Link>
@@ -106,26 +105,8 @@ export default function DashboardLayout({
                         })}
                     </nav>
 
-                    {/* Search Bar */}
-                    <div className="flex-1 max-w-md hidden md:block">
-                        <div className="relative group">
-                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-primary transition-colors">
-                                <Menu className="h-4 w-4" /> {/* Swap with search icon if preferred */}
-                            </div>
-                            <input
-                                type="text"
-                                placeholder="Enter your search request..."
-                                className="block w-full bg-white border-none rounded-full py-2.5 pl-11 pr-4 text-sm shadow-xs ring-1 ring-gray-200 focus:ring-2 focus:ring-primary focus:bg-white transition-all placeholder:text-gray-400"
-                            />
-                        </div>
-                    </div>
-
                     {/* Right Actions */}
                     <div className="flex items-center gap-4">
-                        <div className="hidden sm:flex items-center gap-2 pr-4 border-r border-gray-200">
-                            <ThemeToggle />
-                        </div>
-
                         <div className="flex items-center gap-3">
                             <Link href="/dashboard/profile" className="flex items-center gap-3 p-1 rounded-full hover:bg-white transition-all border border-transparent hover:border-gray-200">
                                 <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden border border-gray-100">
@@ -171,7 +152,7 @@ export default function DashboardLayout({
                     />
 
                     {/* Drawer */}
-                    <div className="fixed inset-y-0 right-0 w-full max-w-xs bg-white shadow-2xl p-6 flex flex-col gap-8 animate-in slide-in-from-right duration-300">
+                    <div className="fixed inset-y-0 right-0 w-full max-w-xs bg-zinc-900 border-l border-zinc-800 shadow-2xl p-6 flex flex-col gap-8 animate-in slide-in-from-right duration-500 ease-out">
                         <div className="flex items-center justify-between">
                             <span className="text-xl font-bold tracking-tight text-foreground">Menu</span>
                             <button
@@ -192,11 +173,11 @@ export default function DashboardLayout({
                                         href={item.href}
                                         onClick={() => setSidebarOpen(false)}
                                         className={cn(
- "flex items-center gap-4 px-4 py-3 text-base font-semibold rounded-2xl transition-all duration-200",
- isActive
- ? "text-white bg-primary shadow-lg shadow-primary/20"
- : "text-gray-500 hover:text-foreground hover:bg-gray-100 "
- )}
+                                            "flex items-center gap-4 px-4 py-3 text-base font-semibold rounded-2xl transition-all duration-200",
+                                            isActive
+                                                ? "text-white bg-primary shadow-lg shadow-primary/20"
+                                                : "text-gray-500 hover:text-foreground hover:bg-gray-100 "
+                                        )}
                                     >
                                         <item.icon className={cn("h-5 w-5", isActive ? "text-white" : "text-gray-400 group-hover:text-primary")} />
                                         {item.name}
@@ -213,7 +194,7 @@ export default function DashboardLayout({
                                 </div>
                                 <div>
                                     <p className="text-sm font-bold text-foreground">{user?.name || 'Administrator'}</p>
-                                    <p className="text-xs text-gray-400 font-medium">{user?.role || 'Staff Management'}</p>
+                                    <p className="text-xs text-gray-400 font-medium">{user?.role || 'Admin'}</p>
                                 </div>
                             </div>
 

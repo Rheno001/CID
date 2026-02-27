@@ -258,7 +258,7 @@ export default function StaffForm({ initialData, isEdit = false }: StaffFormProp
     };
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-8 max-w-2xl bg-white dark:bg-zinc-900 p-10 rounded-4xl border border-gray-100 dark:border-zinc-800 shadow-sm animate-in fade-in duration-700">
+        <form onSubmit={handleSubmit} className="space-y-8 max-w-2xl bg-zinc-900 p-10 rounded-4xl border border-zinc-800 shadow-sm animate-in fade-in duration-700">
             <div className="space-y-8">
                 <div>
                     <h3 className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-6 flex items-center gap-2">
@@ -275,7 +275,7 @@ export default function StaffForm({ initialData, isEdit = false }: StaffFormProp
                                 value={formData.name}
                                 onChange={handleChange}
                                 placeholder="e.g. John Doe"
-                                className="block w-full rounded-2xl border-0 py-3.5 px-4 text-sm font-bold text-foreground bg-gray-50/50 dark:bg-zinc-800 ring-1 ring-inset ring-gray-100 dark:ring-zinc-700 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                className="block w-full rounded-2xl border-0 py-3.5 px-4 text-sm font-bold text-foreground bg-zinc-800 ring-zinc-700 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                             />
                         </div>
 
@@ -289,7 +289,7 @@ export default function StaffForm({ initialData, isEdit = false }: StaffFormProp
                                 value={formData.email}
                                 onChange={handleChange}
                                 placeholder="john@example.com"
-                                className="block w-full rounded-2xl border-0 py-3.5 px-4 text-sm font-bold text-foreground bg-gray-50/50 dark:bg-zinc-800 ring-1 ring-inset ring-gray-100 dark:ring-zinc-700 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                className="block w-full rounded-2xl border-0 py-3.5 px-4 text-sm font-bold text-foreground bg-zinc-800 ring-zinc-700 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                             />
                         </div>
 
@@ -303,7 +303,7 @@ export default function StaffForm({ initialData, isEdit = false }: StaffFormProp
                                 value={formData.phone}
                                 onChange={handleChange}
                                 placeholder="+234 ..."
-                                className="block w-full rounded-2xl border-0 py-3.5 px-4 text-sm font-bold text-foreground bg-gray-50/50 dark:bg-zinc-800 ring-1 ring-inset ring-gray-100 dark:ring-zinc-700 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                className="block w-full rounded-2xl border-0 py-3.5 px-4 text-sm font-bold text-foreground bg-zinc-800 ring-zinc-700 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                             />
                         </div>
 
@@ -316,7 +316,7 @@ export default function StaffForm({ initialData, isEdit = false }: StaffFormProp
                                 required
                                 value={formData.dob}
                                 onChange={handleChange}
-                                className="block w-full rounded-2xl border-0 py-3.5 px-4 text-sm font-bold text-foreground bg-gray-50/50 dark:bg-zinc-800 ring-1 ring-inset ring-gray-100 dark:ring-zinc-700 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                className="block w-full rounded-2xl border-0 py-3.5 px-4 text-sm font-bold text-foreground bg-zinc-800 ring-zinc-700 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                             />
                         </div>
 
@@ -330,14 +330,14 @@ export default function StaffForm({ initialData, isEdit = false }: StaffFormProp
                                 value={formData.address}
                                 onChange={handleChange}
                                 placeholder="Enter full residential address"
-                                className="block w-full rounded-2xl border-0 py-3.5 px-4 text-sm font-bold text-foreground bg-gray-50/50 dark:bg-zinc-800 ring-1 ring-inset ring-gray-100 dark:ring-zinc-700 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all resize-none"
+                                className="block w-full rounded-2xl border-0 py-3.5 px-4 text-sm font-bold text-foreground bg-zinc-800 ring-zinc-700 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all resize-none"
                             />
                         </div>
 
                         <div className="sm:col-span-2">
                             <label htmlFor="profile_picture" className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 block ml-1">Profile Picture</label>
                             <div className="flex items-center gap-4">
-                                <div className="h-16 w-16 rounded-2xl bg-gray-50 dark:bg-zinc-800 border-2 border-dashed border-gray-100 dark:border-zinc-700 flex items-center justify-center overflow-hidden">
+                                <div className="h-16 w-16 rounded-2xl bg-zinc-800 border-zinc-700 flex items-center justify-center overflow-hidden">
                                     {compressing ? (
                                         <div className="flex flex-col items-center justify-center gap-1">
                                             <Loader2 className="h-4 w-4 animate-spin text-primary" />
@@ -375,7 +375,7 @@ export default function StaffForm({ initialData, isEdit = false }: StaffFormProp
                                     value={formData.password}
                                     onChange={handleChange}
                                     placeholder="••••••••"
-                                    className="block w-full rounded-2xl border-0 py-3.5 px-4 text-sm font-bold text-foreground bg-gray-50/50 dark:bg-zinc-800 ring-1 ring-inset ring-gray-100 dark:ring-zinc-700 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                    className="block w-full rounded-2xl border-0 py-3.5 px-4 text-sm font-bold text-foreground bg-zinc-800 ring-zinc-700 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                                 />
                             </div>
                         )}
@@ -395,7 +395,7 @@ export default function StaffForm({ initialData, isEdit = false }: StaffFormProp
                                 required
                                 value={formData.company_id || ''}
                                 onChange={handleChange}
-                                className="block w-full rounded-2xl border-0 py-3.5 px-4 text-sm font-bold text-foreground bg-gray-50/50 dark:bg-zinc-800 ring-1 ring-inset ring-gray-100 dark:ring-zinc-700 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                className="block w-full rounded-2xl border-0 py-3.5 px-4 text-sm font-bold text-foreground bg-zinc-800 ring-zinc-700 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                             >
                                 <option key="company-placeholder" value="" disabled>Select Company</option>
                                 {companies.length > 0 ? (
@@ -416,7 +416,7 @@ export default function StaffForm({ initialData, isEdit = false }: StaffFormProp
                                 required
                                 value={formData.role}
                                 onChange={handleChange}
-                                className="block w-full rounded-2xl border-0 py-3.5 px-4 text-sm font-bold text-foreground bg-gray-50/50 dark:bg-zinc-800 ring-1 ring-inset ring-gray-100 dark:ring-zinc-700 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                className="block w-full rounded-2xl border-0 py-3.5 px-4 text-sm font-bold text-foreground bg-zinc-800 ring-zinc-700 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                             >
                                 <option value="" disabled>Select Role</option>
                                 <option value="HOD">HOD</option>
@@ -433,7 +433,7 @@ export default function StaffForm({ initialData, isEdit = false }: StaffFormProp
                                 required
                                 value={formData.employment_type || ''}
                                 onChange={handleChange}
-                                className="block w-full rounded-2xl border-0 py-3.5 px-4 text-sm font-bold text-foreground bg-gray-50/50 dark:bg-zinc-800 ring-1 ring-inset ring-gray-100 dark:ring-zinc-700 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                className="block w-full rounded-2xl border-0 py-3.5 px-4 text-sm font-bold text-foreground bg-zinc-800 ring-zinc-700 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                             >
                                 <option value="" disabled>Select Position</option>
                                 <option value="FULLTIME">Full Time</option>
@@ -450,7 +450,7 @@ export default function StaffForm({ initialData, isEdit = false }: StaffFormProp
                                 required
                                 value={formData.department_id || ''}
                                 onChange={handleChange}
-                                className="block w-full rounded-2xl border-0 py-3.5 px-4 text-sm font-bold text-foreground bg-gray-50/50 dark:bg-zinc-800 ring-1 ring-inset ring-gray-100 dark:ring-zinc-700 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                className="block w-full rounded-2xl border-0 py-3.5 px-4 text-sm font-bold text-foreground bg-zinc-800 ring-zinc-700 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                             >
                                 <option key="dept-placeholder" value="" disabled>Select Department</option>
                                 {departments.length > 0 ? (
@@ -471,7 +471,7 @@ export default function StaffForm({ initialData, isEdit = false }: StaffFormProp
                                 required
                                 value={formData.branch_id || ''}
                                 onChange={handleChange}
-                                className="block w-full rounded-2xl border-0 py-3.5 px-4 text-sm font-bold text-foreground bg-gray-50/50 dark:bg-zinc-800 ring-1 ring-inset ring-gray-100 dark:ring-zinc-700 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                className="block w-full rounded-2xl border-0 py-3.5 px-4 text-sm font-bold text-foreground bg-zinc-800 ring-zinc-700 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                             >
                                 <option key="branch-placeholder" value="" disabled>Select Branch</option>
                                 {branches.length > 0 ? (
@@ -491,7 +491,7 @@ export default function StaffForm({ initialData, isEdit = false }: StaffFormProp
                                 name="reports_to"
                                 value={formData.reports_to || ''}
                                 onChange={handleChange}
-                                className="block w-full rounded-2xl border-0 py-3.5 px-4 text-sm font-bold text-foreground bg-gray-50/50 dark:bg-zinc-800 ring-1 ring-inset ring-gray-100 dark:ring-zinc-700 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                className="block w-full rounded-2xl border-0 py-3.5 px-4 text-sm font-bold text-foreground bg-zinc-800 ring-zinc-700 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                             >
                                 <option key="reports-placeholder" value="">None (Top Level)</option>
                                 {allStaff.length > 0 ? (
@@ -524,7 +524,7 @@ export default function StaffForm({ initialData, isEdit = false }: StaffFormProp
                                 onChange={handleChange}
                                 disabled={!isEdit}
                                 placeholder="Auto-generated"
-                                className="block w-full rounded-2xl border-0 py-3.5 px-4 text-sm font-bold text-foreground bg-gray-50/50 dark:bg-zinc-800 ring-1 ring-inset ring-gray-100 dark:ring-zinc-700 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="block w-full rounded-2xl border-0 py-3.5 px-4 text-sm font-bold text-foreground bg-zinc-800 ring-zinc-700 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                             />
                         </div>
 
@@ -537,7 +537,7 @@ export default function StaffForm({ initialData, isEdit = false }: StaffFormProp
                                 value={formData.leave_balance}
                                 onChange={handleChange}
                                 min="0"
-                                className="block w-full rounded-2xl border-0 py-3.5 px-4 text-sm font-bold text-foreground bg-gray-50/50 dark:bg-zinc-800 ring-1 ring-inset ring-gray-100 dark:ring-zinc-700 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                className="block w-full rounded-2xl border-0 py-3.5 px-4 text-sm font-bold text-foreground bg-zinc-800 ring-zinc-700 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                             />
                         </div>
 
@@ -551,7 +551,7 @@ export default function StaffForm({ initialData, isEdit = false }: StaffFormProp
                                 onChange={handleChange}
                                 min="0"
                                 max="100"
-                                className="block w-full rounded-2xl border-0 py-3.5 px-4 text-sm font-bold text-foreground bg-gray-50/50 dark:bg-zinc-800 ring-1 ring-inset ring-gray-100 dark:ring-zinc-700 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                className="block w-full rounded-2xl border-0 py-3.5 px-4 text-sm font-bold text-foreground bg-zinc-800 ring-zinc-700 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                             />
                         </div>
 
@@ -562,7 +562,7 @@ export default function StaffForm({ initialData, isEdit = false }: StaffFormProp
                                 name="is_active"
                                 value={formData.is_active ? 'true' : 'false'}
                                 onChange={(e) => setFormData({ ...formData, is_active: e.target.value === 'true' })}
-                                className="block w-full rounded-2xl border-0 py-3.5 px-4 text-sm font-bold text-foreground bg-gray-50/50 dark:bg-zinc-800 ring-1 ring-inset ring-gray-100 dark:ring-zinc-700 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                className="block w-full rounded-2xl border-0 py-3.5 px-4 text-sm font-bold text-foreground bg-zinc-800 ring-zinc-700 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                             >
                                 <option value="true">Active</option>
                                 <option value="false">Inactive</option>
@@ -572,8 +572,8 @@ export default function StaffForm({ initialData, isEdit = false }: StaffFormProp
                 </div>
             </div>
 
-            <div className="bg-gray-50 dark:bg-zinc-800/50 p-6 rounded-3xl border border-gray-100 dark:border-zinc-800 flex items-start gap-4">
-                <div className="h-10 w-10 rounded-2xl bg-white dark:bg-zinc-800 shadow-sm flex items-center justify-center text-primary shrink-0">
+            <div className="bg-zinc-800/50 p-6 rounded-3xl border border-zinc-800 flex items-start gap-4">
+                <div className="h-10 w-10 rounded-2xl bg-zinc-800 shadow-sm flex items-center justify-center text-primary shrink-0">
                     <MessageSquare className="h-5 w-5" />
                 </div>
                 <div className="space-y-1">
@@ -589,7 +589,7 @@ export default function StaffForm({ initialData, isEdit = false }: StaffFormProp
             </div>
 
             {error && (
-                <div className="rounded-2xl bg-red-50 p-4 text-xs font-bold text-red-600 border border-red-100 dark:bg-red-900/10 dark:text-red-400 dark:border-red-900/20">
+                <div className="rounded-2xl p-4 font-bold border bg-red-900/10 text-red-400 border-red-900/20">
                     {error}
                 </div>
             )}
