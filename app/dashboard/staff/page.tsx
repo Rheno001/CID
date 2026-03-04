@@ -16,17 +16,7 @@ export default function StaffPage() {
         const fetchStaff = async () => {
             try {
                 const data = await staffApi.getAll();
-                // Defensive check: if response is an object with a data property that is an array
-                if (Array.isArray(data)) {
-                    setStaff(data);
-                } else if (data && typeof data === 'object' && Array.isArray((data as any).data)) {
-                    setStaff((data as any).data);
-                } else if (data && typeof data === 'object' && Array.isArray((data as any).users)) {
-                    setStaff((data as any).users);
-                } else {
-                    console.error('Unexpected staff data format:', data);
-                    setStaff([]);
-                }
+                setStaff(Array.isArray(data) ? data : []);
             } catch (err) {
                 console.error('Failed to fetch staff:', err);
                 setError('Failed to load staff members. Please try again later.');

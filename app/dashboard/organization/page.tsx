@@ -54,39 +54,14 @@ export default function OrganizationPage() {
     const fetchData = async () => {
         setFetchError(null);
         try {
-            const [branchRes, companyRes] = await Promise.all([
-                api.get('api/branches'),
-                api.get('api/companies'),
+            // Use centralized API helpers to normalize responses and handle auth
+            const [rawBranches, rawCompanies] = await Promise.all([
+                branchApi.getAll(),
+                companyApi.getAll(),
             ]);
 
-            const bd = branchRes.data;
-            const cd = companyRes.data;
-
-            console.log('[fetchData] branch response.data:', JSON.stringify(bd).slice(0, 500));
-
-            const extractArray = (d: any, keys = ['branches', 'companies', 'data', 'results', 'items']): any[] => {
-                if (Array.isArray(d)) return d;
-                if (!d || typeof d !== 'object') return [];
-                // Check top-level array keys
-                for (const k of keys) {
-                    if (Array.isArray(d[k])) return d[k];
-                }
-                // One level deeper: e.g. { status, data: { branches: [...] } }
-                if (d.data && typeof d.data === 'object' && !Array.isArray(d.data)) {
-                    for (const k of keys) {
-                        if (Array.isArray(d.data[k])) return d.data[k];
-                    }
-                }
-                return [];
-            };
-
-            const rawBranches = extractArray(bd);
-            const rawCompanies = extractArray(cd);
-
-            console.log('[fetchData] branches found:', rawBranches.length);
-
-            setBranches(rawBranches.map((b: any, i: number) => ({ ...b, _id: b._id || b.id || `b-${i}` })));
-            setCompanies(rawCompanies.map((c: any, i: number) => ({ ...c, _id: c._id || c.id || `c-${i}` })));
+            setBranches(Array.isArray(rawBranches) ? rawBranches.map((b: any) => ({ ...b, _id: b._id || b.id })) : []);
+            setCompanies(Array.isArray(rawCompanies) ? rawCompanies.map((c: any) => ({ ...c, _id: c._id || c.id })) : []);
         } catch (error: any) {
             console.error('Failed to fetch data', error);
             const msg = error?.response?.data?.message || error?.message || 'Unknown error';
@@ -100,11 +75,9 @@ export default function OrganizationPage() {
             if (departmentData.company_id) {
                 try {
                     const employees = await companyApi.getEmployees(departmentData.company_id);
-                    const rawEmployees = Array.isArray(employees) ? employees : (employees as any).data || (employees as any).employees || [];
-                    const normalizedEmployees = rawEmployees.map((e: any, idx: number) => ({
-                        ...e,
-                        _id: e._id || e.id || `emp-${idx}`
-                    }));
+                    const normalizedEmployees = Array.isArray(employees) 
+                        ? employees.map((e: any) => ({ ...e, _id: e._id || e.id }))
+                        : [];
                     setCompanyEmployees(normalizedEmployees);
                 } catch (error) {
                     console.error('Failed to fetch company employees:', error);

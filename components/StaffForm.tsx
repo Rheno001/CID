@@ -1,12 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Staff, Role, Department, Branch, Company } from '@/app/types';
-import { cn } from '@/lib/utils';
-import api, { lookupApi, staffApi, branchApi, companyApi } from '@/lib/api';
-import { Loader2, User, Mail, Briefcase, Building, Phone, Calendar, MapPin, Camera, MessageSquare, Users } from 'lucide-react';
-import { useEffect } from 'react';
+import { Staff, Department, Branch, Company } from '@/app/types';
+import { lookupApi, staffApi, branchApi, companyApi } from '@/lib/api';
+import { Loader2, User, Briefcase, MessageSquare, Users } from 'lucide-react';
 
 interface StaffFormProps {
     initialData?: Staff;
@@ -18,7 +16,6 @@ export default function StaffForm({ initialData, isEdit = false }: StaffFormProp
     const [loading, setLoading] = useState(false);
     const [compressing, setCompressing] = useState(false);
     const [error, setError] = useState('');
-    const [roles, setRoles] = useState<Role[]>([]);
     const [departments, setDepartments] = useState<Department[]>([]);
     const [branches, setBranches] = useState<Branch[]>([]);
     const [companies, setCompanies] = useState<Company[]>([]);
@@ -26,96 +23,59 @@ export default function StaffForm({ initialData, isEdit = false }: StaffFormProp
     const [formData, setFormData] = useState<Partial<Staff>>({
         name: initialData?.name || '',
         email: initialData?.email || '',
-        role: initialData?.role || '',
         company_id: initialData?.company_id || '',
-        department_id: (typeof initialData?.department === 'object' && initialData.department !== null) ? (initialData.department as any)._id : '',
+        department_id: (typeof initialData?.department === 'object' && initialData.department !== null) ? (initialData.department as any)._id || (initialData.department as any).id || '' : '',
         branch_id: initialData?.branch_id || '',
         phone: initialData?.phone || '',
         dob: initialData?.dob || '',
         address: initialData?.address || '',
-        profile_picture: initialData?.profile_picture || '',
+        profile_picture: initialData?.profile_picture || initialData?.profile_pic_url || '',
         reports_to: initialData?.reports_to || '',
         password: '',
         staff_id: initialData?.staff_id || '',
         leave_balance: initialData?.leave_balance ?? 20,
         stats_score: initialData?.stats_score ?? 100,
         is_active: initialData?.is_active ?? true,
-        employment_type: initialData?.employment_type || undefined,
+        employment_type: (initialData?.employment_type as any) || 'FULLTIME',
     });
 
     useEffect(() => {
         const fetchLookups = async () => {
             try {
-                const [deptsRes, branchesRes, companiesRes, staffRes] = await Promise.all([
-                    api.get('api/departments'),
-                    api.get('api/branches'),
-                    api.get('api/companies'),
-                    api.get('api/users/staff').catch(() => ({ data: [] }))
+                const [deptList, branchList, companyList, staffList] = await Promise.all([
+                    lookupApi.getDepartments(),
+                    branchApi.getAll(),
+                    companyApi.getAll(),
+                    staffApi.getAll(),
                 ]);
 
-                const departmentsData = deptsRes.data;
-                const branchesData = branchesRes.data;
-                const companiesData = companiesRes.data;
-                const staffData = staffRes.data;
+                setDepartments(deptList.map((d: any, idx: number) => ({
+                    _id: d._id || d.id || `dept-${idx}`,
+                    name: d.name || String(d),
+                })));
 
-                const extractArray = (d: any, keys = ['branches', 'companies', 'departments', 'roles', 'users', 'staff', 'data', 'results', 'items']): any[] => {
-                    if (Array.isArray(d)) return d;
-                    if (!d || typeof d !== 'object') return [];
-                    // Check top-level array keys
-                    for (const k of keys) {
-                        if (Array.isArray(d[k])) return d[k];
-                    }
-                    // One level deeper string
-                    if (d.data && typeof d.data === 'object' && !Array.isArray(d.data)) {
-                        for (const k of keys) {
-                            if (Array.isArray(d.data[k])) return d.data[k];
-                        }
-                    }
-                    return [];
-                };
-
-                // Normalize departments
-                const rawDepts = extractArray(departmentsData);
-                const normalizedDepts = rawDepts.map((d: any, idx: number) => {
-                    if (typeof d === 'string') return { _id: d, name: d };
-                    return {
-                        _id: d._id || d.id || `dept-${d.name || idx}`,
-                        name: d.name || String(d)
-                    };
-                });
-                setDepartments(normalizedDepts);
-
-                // Normalize branches
-                const rawBranches = extractArray(branchesData);
-                const normalizedBranches = rawBranches.map((b: any, idx: number) => ({
+                setBranches(branchList.map((b: any, idx: number) => ({
                     ...b,
-                    _id: b._id || b.id || `branch-${idx}`
-                }));
-                setBranches(normalizedBranches);
+                    _id: b._id || b.id || `branch-${idx}`,
+                })));
 
-                // Normalize companies
-                const rawCompanies = extractArray(companiesData);
-                const normalizedCompanies = rawCompanies.map((c: any, idx: number) => ({
+                setCompanies(companyList.map((c: any, idx: number) => ({
                     ...c,
-                    _id: c._id || c.id || `company-${idx}`
-                }));
-                setCompanies(normalizedCompanies);
+                    _id: c._id || c.id || `company-${idx}`,
+                })));
 
-                // Normalize staff for "Reports To" lookup
-                const rawStaff = extractArray(staffData);
-                const normalizedStaff = rawStaff.map((s: any) => ({
-                    ...s,
-                    _id: s._id || s.id,
-                })).filter((s: any) => s._id);
-                setAllStaff(normalizedStaff);
-
+                setAllStaff(
+                    staffList
+                        .map((s: any) => ({ ...s, _id: s._id || s.id }))
+                        .filter((s: any) => s._id && s._id !== initialData?._id),
+                );
             } catch (err) {
                 console.error('Failed to fetch lookup data:', err);
             }
         };
 
         fetchLookups();
-    }, []);
+    }, [initialData?._id, initialData?.id]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -128,7 +88,6 @@ export default function StaffForm({ initialData, isEdit = false }: StaffFormProp
             const formPayload = new FormData();
             formPayload.append('name', formData.name || '');
             formPayload.append('email', formData.email || '');
-            formPayload.append('role', formData.role || '');
             formPayload.append('position', formData.employment_type || '');
             if (formData.phone) formPayload.append('phone', formData.phone);
             if (formData.address) formPayload.append('address', formData.address);
@@ -140,7 +99,7 @@ export default function StaffForm({ initialData, isEdit = false }: StaffFormProp
 
             formPayload.append('stats_score', String(formData.stats_score ?? 100));
             formPayload.append('leave_balance', String(formData.leave_balance ?? 20));
-            formPayload.append('is_active', String(formData.is_active ?? true));
+            // formPayload.append('is_active', String(formData.is_active ?? true)); (Not handled by current routes)
             if (formData.staff_id) formPayload.append('staff_id', formData.staff_id);
 
             // Attach the actual compressed File object
@@ -408,22 +367,6 @@ export default function StaffForm({ initialData, isEdit = false }: StaffFormProp
                             </select>
                         </div>
 
-                        <div>
-                            <label htmlFor="role" className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 block ml-1">Position / Job Title</label>
-                            <select
-                                id="role"
-                                name="role"
-                                required
-                                value={formData.role}
-                                onChange={handleChange}
-                                className="block w-full rounded-2xl border-0 py-3.5 px-4 text-sm font-bold text-foreground bg-zinc-800 ring-zinc-700 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                            >
-                                <option value="" disabled>Select Role</option>
-                                <option value="HOD">HOD</option>
-                                <option value="Assistant HOD">Assistant HOD</option>
-                                <option value="General Staff">General Staff</option>
-                            </select>
-                        </div>
 
                         <div className="sm:col-span-2">
                             <label htmlFor="employment_type" className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 block ml-1">Employment Position / Status</label>
@@ -437,8 +380,10 @@ export default function StaffForm({ initialData, isEdit = false }: StaffFormProp
                             >
                                 <option value="" disabled>Select Position</option>
                                 <option value="FULLTIME">Full Time</option>
-                                <option value="INTERN">Intern</option>
                                 <option value="CONTRACT">Contract Staff</option>
+                                <option value="CORPER">Corper (NYSC)</option>
+                                <option value="GRADUATE_INTERN">Graduate Intern</option>
+                                <option value="STUDENT_INTERN">Student Intern</option>
                             </select>
                         </div>
 
