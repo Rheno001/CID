@@ -34,7 +34,6 @@ export default function StaffViewPage({ params }: { params: Promise<{ id: string
     const [appraisals, setAppraisals] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [isAppraisalsOpen, setIsAppraisalsOpen] = useState(false);
     const [isOverrideOpen, setIsOverrideOpen] = useState(false);
     const [overrideReason, setOverrideReason] = useState('');
     const [clockLoading, setClockLoading] = useState<'in' | 'out' | null>(null);
@@ -273,26 +272,11 @@ export default function StaffViewPage({ params }: { params: Promise<{ id: string
                         </div>
                     </div>
 
-                    <button
-                        onClick={() => setIsAppraisalsOpen(true)}
-                        className="w-full flex items-center justify-between p-7 rounded-[2.5rem] bg-zinc-900/50 hover:bg-zinc-900 transition-all border border-zinc-800 group"
-                    >
-                        <div className="flex items-center gap-5">
-                            <div className="h-14 w-14 rounded-3xl bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform border border-primary/20">
-                                <TrendingUp className="h-7 w-7" />
-                            </div>
-                            <div className="text-left">
-                                <p className="text-xl font-black text-foreground leading-none">Internal Review</p>
-                                <p className="text-[10px] font-black text-primary uppercase tracking-widest mt-2">Appraisals & Reports</p>
-                            </div>
-                        </div>
-                        <ChevronLeft className="h-5 w-5 text-primary rotate-180" />
-                    </button>
                 </div>
 
                 {/* Right: History Timeline */}
-                <div className="lg:col-span-8 flex flex-col gap-8 h-full">
-                    <div className="bg-zinc-900/40 rounded-4xl border border-zinc-900 flex-1 flex flex-col overflow-hidden backdrop-blur-sm">
+                <div className="lg:col-span-8 flex flex-col gap-8">
+                    <div className="bg-zinc-900/40 rounded-4xl border border-zinc-900 flex flex-col overflow-hidden backdrop-blur-sm">
                         <div className="p-8 flex items-center justify-between border-b border-zinc-900">
                             <div className="flex items-center gap-4">
                                 <div className="h-12 w-12 rounded-2xl bg-zinc-900 flex items-center justify-center text-primary border border-zinc-800">
@@ -308,7 +292,7 @@ export default function StaffViewPage({ params }: { params: Promise<{ id: string
                             </div>
                         </div>
 
-                        <div className="flex-1 overflow-x-auto min-h-[500px]">
+                        <div className="overflow-x-auto">
                             <table className="w-full text-left">
                                 <thead className="bg-zinc-950/20">
                                     <tr>
@@ -370,6 +354,8 @@ export default function StaffViewPage({ params }: { params: Promise<{ id: string
                         </div>
                     </div>
 
+                    <AppraisalsView userId={id} userName={staff?.name} />
+
                     <div className="bg-zinc-900 p-8 rounded-[2.5rem] border border-zinc-800 flex items-center gap-8 group">
                         <div className="h-16 w-16 rounded-3xl bg-zinc-950 flex items-center justify-center text-primary shrink-0 group-hover:scale-105 transition-transform border border-zinc-800">
                             <Info className="h-8 w-8" />
@@ -384,10 +370,6 @@ export default function StaffViewPage({ params }: { params: Promise<{ id: string
                 </div>
             </div>
 
-            {/* Appraisals Modal */}
-            <Modal isOpen={isAppraisalsOpen} onClose={() => setIsAppraisalsOpen(false)}>
-                <AppraisalsView userId={id} userName={staff?.name} />
-            </Modal>
 
             {/* Manual Override Modal */}
             <Modal isOpen={isOverrideOpen} onClose={() => { setIsOverrideOpen(false); setOverrideReason(''); }}>

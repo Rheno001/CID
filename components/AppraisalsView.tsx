@@ -361,7 +361,7 @@ export default function AppraisalsView({ userId, userName }: AppraisalsViewProps
     };
 
     return (
-        <div className="bg-zinc-900 rounded-4xl shadow-sm border border-zinc-800 overflow-hidden flex flex-col h-full">
+        <div className="bg-zinc-900 rounded-4xl shadow-sm border border-zinc-800 overflow-hidden">
             {/* Header */}
             <div className="px-8 py-8 flex items-center justify-between flex-wrap gap-4 border-zinc-800">
                 <div className="flex items-center gap-4">
@@ -418,7 +418,7 @@ export default function AppraisalsView({ userId, userName }: AppraisalsViewProps
             </div>
 
             {/* Content */}
-            <div className="flex-1 overflow-x-auto min-h-[300px]">
+            <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                     <thead>
                         <tr className="bg-zinc-800/30">
