@@ -87,6 +87,14 @@ export const authApi = {
       throw e;
     }
   },
+  forgotPassword: async (email: string): Promise<any> => {
+    try {
+      const response = await api.post("api/auth/forgot-password", { email });
+      return response.data;
+    } catch (e) {
+      throw e;
+    }
+  },
 };
 
 export const staffApi = {
@@ -426,6 +434,22 @@ export const appraisalApi = {
       throw e;
     }
   },
+  submit: async (data: any): Promise<any> => {
+    try {
+      const response = await api.post("api/appraisals", data);
+      return response.data;
+    } catch (e) {
+      throw e;
+    }
+  },
+};
+
+export const getImageUrl = (url?: string | null) => {
+  if (!url) return null;
+  if (url.startsWith("http")) return url;
+  // Remove leading slash if any to avoid double slash
+  const cleanUrl = url.startsWith("/") ? url.slice(1) : url;
+  return `${API_URL}/${cleanUrl}`;
 };
 
 export default api;

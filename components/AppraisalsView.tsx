@@ -1,11 +1,56 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Appraisal } from '@/app/types';
-import { appraisalApi } from '@/lib/api';
-import { Loader2, Download, Calendar, TrendingUp } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
+import { Appraisal, Staff } from '@/app/types';
+import { appraisalApi, staffApi, companyApi, departmentApi, getImageUrl } from '@/lib/api';
+import { Loader2, Download, Calendar, TrendingUp, FileText } from 'lucide-react';
 import * as XLSX from 'xlsx';
+import * as ExcelJS from 'exceljs';
+import {
+    AlignmentType,
+    Document,
+    HeadingLevel,
+    ImageRun,
+    Packer,
+    Paragraph,
+    Table,
+    TableCell,
+    TableRow,
+    TextRun,
+    WidthType,
+} from "docx";
+import { saveAs } from 'file-saver';
 import { cn } from '@/lib/utils';
+
+const getImageBuffer = async (url: string) => {
+    try {
+        const response = await fetch(url);
+        if (!response.ok) return null;
+        return await response.arrayBuffer();
+    } catch (error) {
+        console.error("Failed to get image buffer:", error);
+        return null;
+    }
+};
+
+const getBase64 = async (url: string) => {
+    try {
+        const response = await fetch(url);
+        const blob = await response.blob();
+        return new Promise<string | null>((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                const base64String = reader.result as string;
+                resolve(base64String.split(',')[1]);
+            };
+            reader.onerror = () => resolve(null);
+            reader.readAsDataURL(blob);
+        });
+    } catch (error) {
+        console.error("Failed to get base64:", error);
+        return null;
+    }
+};
 
 interface AppraisalsViewProps {
     userId: string;
@@ -19,13 +64,65 @@ export default function AppraisalsView({ userId, userName }: AppraisalsViewProps
     const [appraisals, setAppraisals] = useState<Appraisal[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [userInfo, setUserInfo] = useState<any>(null);
+    const [isExporting, setIsExporting] = useState(false);
 
     useEffect(() => {
+        const fetchUserData = async () => {
+            try {
+                const data = await staffApi.getById(userId);
+                if (!data) return;
+
+                let deptHeadName = "";
+                let deptHeadSignature = "";
+                let mdName = "";
+                let mdSignature = "";
+
+                const departmentId = data.department_id || (typeof data.department === "object" ? data.department?._id || data.department?.id : null);
+                if (departmentId) {
+                    try {
+                        const dept = await departmentApi.getById(departmentId);
+                        if (dept && dept.head_id) {
+                            const head = await staffApi.getById(dept.head_id);
+                            if (head) {
+                                deptHeadName = head.name;
+                                deptHeadSignature = head.profile_pic_url || ""; // Assuming signature is stored there or somewhere accessible
+                            }
+                        }
+                    } catch (e) { console.error("Dept head fetch failed", e); }
+                }
+
+                const companyId = data.company_id || (typeof data.company === "object" ? data.company?._id || data.company?.id : null);
+                if (companyId) {
+                    try {
+                        const employees = await companyApi.getEmployees(companyId);
+                        const md = employees.find(e => e.role?.toUpperCase() === 'MD' || e.role?.toUpperCase() === 'CEO');
+                        if (md) {
+                            mdName = md.name;
+                            mdSignature = md.profile_pic_url || "";
+                        }
+                    } catch (e) { console.error("MD fetch failed", e); }
+                }
+
+                setUserInfo({
+                    name: data.name,
+                    department: typeof data.department === 'string' ? data.department : data.department?.name || 'N/A',
+                    company: typeof data.company === 'object' ? data.company?.name : 'TBG',
+                    signature_url: data.profile_pic_url, // Fallback for signature
+                    deptHeadName,
+                    deptHeadSignature,
+                    mdName,
+                    mdSignature
+                });
+            } catch (err) {
+                console.error("Failed to fetch user data", err);
+            }
+        };
+
         const fetch = async () => {
             setIsLoading(true);
             setError(null);
             try {
-                // Ensure month is 0-padded for API consistency if needed, though most APIs handle both
                 const m = month.toString().padStart(2, '0');
                 const data = await appraisalApi.getMonthly(userId, m, year);
                 setAppraisals(data);
@@ -37,26 +134,230 @@ export default function AppraisalsView({ userId, userName }: AppraisalsViewProps
             }
         };
         fetch();
+        fetchUserData();
     }, [userId, month, year]);
 
-    const handleDownload = () => {
+    const exportToExcel = async () => {
+        if (isExporting || !appraisals.length) return;
+        setIsExporting(true);
+        try {
+            const daysInMonth = new Date(year, month, 0).getDate();
+            const mStr = new Date(year, month - 1).toLocaleString("en-US", { month: "short" });
+            const monthDisplay = `${mStr}-${year.toString().slice(-2)}`;
+
+            const workbook = new ExcelJS.Workbook();
+            const worksheet = workbook.addWorksheet("Timesheet");
+
+            // --- HEADER SECTION ---
+            worksheet.mergeCells("A1:G1");
+            const titleCell = worksheet.getCell("A1");
+            titleCell.value = "TBG/URNI Monthly Timesheet";
+            titleCell.font = { bold: true, size: 16, name: "Calibri" };
+            titleCell.alignment = { horizontal: "center", vertical: "middle" };
+
+            const addHeaderRow = (label: string, value: string, row: number) => {
+                const labelCell = worksheet.getCell(`A${row}`);
+                labelCell.value = label;
+                labelCell.font = { bold: true, name: "Calibri" };
+                labelCell.alignment = { horizontal: "right", vertical: "middle" };
+
+                worksheet.mergeCells(`B${row}:E${row}`);
+                const valCell = worksheet.getCell(`B${row}`);
+                valCell.value = value;
+                valCell.fill = {
+                    type: "pattern",
+                    pattern: "solid",
+                    fgColor: { argb: "FFFFFF00" }, // Yellow
+                };
+                valCell.alignment = { horizontal: "center", vertical: "middle" };
+                valCell.border = {
+                    bottom: { style: "thin" },
+                };
+            };
+
+            addHeaderRow("Name", userInfo?.name || userName || "", 3);
+            addHeaderRow("Designation", userInfo?.department || "", 4);
+            addHeaderRow("Company", userInfo?.company || "TBG", 5);
+            addHeaderRow("Contract No.", "", 6);
+
+            // Month Row
+            const monthLabel = worksheet.getCell("A7");
+            monthLabel.value = "Month";
+            monthLabel.font = { bold: true, name: "Calibri" };
+            monthLabel.alignment = { horizontal: "right", vertical: "middle" };
+
+            worksheet.mergeCells("B7:D7");
+            const monthVal = worksheet.getCell("B7");
+            monthVal.value = monthDisplay;
+            monthVal.font = { bold: true, color: { argb: "FF0000FF" }, name: "Calibri" };
+            monthVal.alignment = { horizontal: "center", vertical: "middle" };
+            monthVal.border = { bottom: { style: "thin" } };
+
+            // --- TABLE HEADER ---
+            const headerRow = worksheet.getRow(9);
+            headerRow.values = ["Day", "Date", "Home", "Inter-State Travel", "Office", "Activity Description and Progress", "Challenges"];
+            headerRow.height = 35;
+            headerRow.eachCell((cell: any) => {
+                cell.font = { bold: true, size: 10, name: "Calibri" };
+                cell.alignment = { horizontal: "center", vertical: "middle", wrapText: true };
+                cell.border = { top: { style: "thin" }, bottom: { style: "thin" }, left: { style: "thin" }, right: { style: "thin" } };
+            });
+
+            let totalHome = 0; let totalOffice = 0; let totalInterstate = 0;
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                const currentDate = new Date(year, month - 1, day);
+                const dayName = currentDate.toLocaleDateString("en-US", { weekday: "long" });
+                const dateKey = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+
+                // Flexible log matching (Backend might store YYYY-MM-DD or full date)
+                const log = appraisals.find(l => l.date.includes(dateKey) || new Date(l.date).getDate() === day);
+
+                const workplace = log?.workplace?.toLowerCase() || "";
+                if (workplace === "home") totalHome++;
+                else if (workplace === "interstate") totalInterstate++;
+                else if (workplace === "office") totalOffice++;
+
+                const row = worksheet.getRow(9 + day);
+                row.values = [dayName, day, workplace === "home" ? "1" : "", workplace === "interstate" ? "1" : "", workplace === "office" ? "1" : "", log?.achievements || "", log?.challenges || ""];
+
+                const isWeekend = dayName === "Saturday" || dayName === "Sunday";
+                const fillColor = isWeekend ? "FFFFFF00" : "FFFFFFFF";
+                const textColor = !isWeekend ? "FF0000FF" : "FF000000";
+
+                row.eachCell((cell: any, colNumber: any) => {
+                    cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: fillColor } };
+                    cell.font = { size: 11, name: "Calibri", color: { argb: colNumber === 1 ? textColor : "FF000000" } };
+                    cell.alignment = { horizontal: colNumber === 6 || colNumber === 7 ? "left" : "center", vertical: "middle", wrapText: true };
+                    cell.border = { top: { style: "thin" }, bottom: { style: "thin" }, left: { style: "thin" }, right: { style: "thin" } };
+                });
+            }
+
+            const totalRowIndex = 9 + daysInMonth + 1;
+            const totalRow = worksheet.getRow(totalRowIndex);
+            totalRow.values = ["TOTAL", "", totalHome, totalInterstate, totalOffice, "", ""];
+            totalRow.eachCell((cell, colNumber) => {
+                cell.font = { bold: true, size: 11, name: "Calibri" };
+                cell.alignment = { horizontal: "center", vertical: "middle" };
+                cell.border = { top: { style: "thick" }, bottom: { style: "thick" }, left: { style: "thin" }, right: { style: "thin" } };
+                if (colNumber >= 3 && colNumber <= 5) cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFDDDDDD" } };
+            });
+            worksheet.mergeCells(`A${totalRowIndex}:B${totalRowIndex}`);
+
+            worksheet.columns = [{ width: 15 }, { width: 8 }, { width: 8 }, { width: 15 }, { width: 8 }, { width: 40 }, { width: 40 }];
+
+            // Signatures
+            let currentRow = 9 + daysInMonth + 3;
+            worksheet.mergeCells(`A${currentRow}:C${currentRow}`);
+            worksheet.getCell(`A${currentRow}`).value = `Prepared By: ${userInfo?.name || userName || ""}`;
+            worksheet.getCell(`A${currentRow}`).font = { bold: true, name: "Calibri", size: 12 };
+            currentRow++;
+
+            const userSigUrl = getImageUrl(userInfo?.signature_url);
+            if (userSigUrl) {
+                const base64 = await getBase64(userSigUrl);
+                if (base64) {
+                    const imageId = workbook.addImage({ base64, extension: "png" });
+                    worksheet.addImage(imageId, { tl: { col: 0, row: currentRow - 1 }, ext: { width: 140, height: 60 } });
+                    worksheet.getRow(currentRow).height = 60;
+                }
+            } else {
+                worksheet.getCell(`A${currentRow}`).value = "________________";
+            }
+            currentRow += 2;
+
+            worksheet.mergeCells(`A${currentRow}:D${currentRow}`);
+            worksheet.getCell(`A${currentRow}`).value = `Verified and Approved By MD: ${userInfo?.mdName || ""}`;
+            worksheet.getCell(`A${currentRow}`).font = { bold: true, name: "Calibri", size: 12 };
+            currentRow++;
+
+            const mdSigUrl = getImageUrl(userInfo?.mdSignature);
+            if (mdSigUrl) {
+                const base64 = await getBase64(mdSigUrl);
+                if (base64) {
+                    const imageId = workbook.addImage({ base64, extension: "png" });
+                    worksheet.addImage(imageId, { tl: { col: 0, row: currentRow - 1 }, ext: { width: 140, height: 60 } });
+                    worksheet.getRow(currentRow).height = 60;
+                }
+            } else {
+                worksheet.getCell(`A${currentRow}`).value = "________________";
+            }
+
+            const buffer = await workbook.xlsx.writeBuffer();
+            const fileName = `${(userName || userInfo?.name || "User").replace(/\s+/g, "_")}_Timesheet_${mStr}_${year}.xlsx`;
+            saveAs(new Blob([buffer]), fileName);
+
+        } catch (error) {
+            console.error("Export Excel Error:", error);
+        } finally {
+            setIsExporting(false);
+        }
+    };
+
+    const exportToWord = async () => {
         if (!appraisals.length) return;
+        try {
+            const mName = new Date(year, month - 1).toLocaleString("en-US", { month: "long" });
+            const daysInMonth = new Date(year, month, 0).getDate();
+            const totalDays = appraisals.length;
+            const completionRate = ((totalDays / daysInMonth) * 100).toFixed(1);
 
-        const data = appraisals.map(a => ({
-            Date: new Date(a.date).toLocaleDateString(),
-            Workplace: a.workplace,
-            Achievements: a.achievements,
-            Challenges: a.challenges,
-            Created_At: new Date(a.createdAt).toLocaleString()
-        }));
+            const children: any[] = [
+                new Paragraph({ text: "TBG", alignment: "center", style: "Heading1" }),
+                new Paragraph({ text: "MONTHLY APPRAISAL REPORT", alignment: "center", spacing: { after: 200, before: 100 }, style: "Heading1" }),
+                new Paragraph({ text: "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━", alignment: "center", spacing: { after: 300 } }),
+                new Paragraph({ text: "REPORT DETAILS", alignment: "center", spacing: { after: 200, before: 200 }, style: "Heading2" }),
+                new Paragraph({ children: [new TextRun({ text: "Employee Name:  ", bold: true, size: 24 }), new TextRun({ text: userInfo?.name || userName || "N/A", size: 24 })] }),
+                new Paragraph({ children: [new TextRun({ text: "Department:  ", bold: true, size: 24 }), new TextRun({ text: userInfo?.department || "N/A", size: 24 })] }),
+                new Paragraph({ children: [new TextRun({ text: "Reporting Period:  ", bold: true, size: 24 }), new TextRun({ text: `${mName} ${year}`, size: 24 })] }),
+                new Paragraph({ text: "", pageBreakBefore: true }),
+                new Paragraph({ text: "EXECUTIVE SUMMARY", heading: HeadingLevel.HEADING_1, spacing: { after: 200, before: 200 } }),
+                new Paragraph({ children: [new TextRun({ text: "Total Days in Month:  ", bold: true }), new TextRun({ text: `${daysInMonth} days` })] }),
+                new Paragraph({ children: [new TextRun({ text: "Entries Submitted:  ", bold: true }), new TextRun({ text: `${totalDays} days` })] }),
+                new Paragraph({ children: [new TextRun({ text: "Completion Rate:  ", bold: true }), new TextRun({ text: `${completionRate}%` })] }),
+            ];
 
-        const ws = XLSX.utils.json_to_sheet(data);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, `Appraisals ${month}-${year}`);
-        const filename = userName
-            ? `Appraisals_${userName.replace(/\s+/g, '_')}_${month}_${year}.xlsx`
-            : `Appraisals_${userId}_${month}_${year}.xlsx`;
-        XLSX.writeFile(wb, filename);
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateKey = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+                const log = appraisals.find(l => l.date.includes(dateKey) || new Date(l.date).getDate() === day);
+                const d = new Date(year, month - 1, day);
+                const dayName = d.toLocaleDateString("en-US", { weekday: "long" });
+
+                children.push(new Paragraph({
+                    children: [new TextRun({ text: `${dayName}, ${d.toLocaleDateString()}`, bold: true, size: 26, color: "2E5090" })],
+                    spacing: { before: 300, after: 150 },
+                    border: { bottom: { color: "2E5090", space: 1, style: "single", size: 6 } }
+                }));
+
+                if (log) {
+                    children.push(new Paragraph({ children: [new TextRun({ text: "✓ ACTIVITY", bold: true, color: "0F7C41" })] }));
+                    children.push(new Paragraph({ text: log.achievements }));
+                    children.push(new Paragraph({ children: [new TextRun({ text: "⚠ CHALLENGES", bold: true, color: "C44E00" })] }));
+                    children.push(new Paragraph({ text: log.challenges }));
+                } else {
+                    children.push(new Paragraph({ text: "No activity recorded", italics: true }));
+                }
+            }
+
+            const doc = new Document({
+                sections: [{ children }],
+                styles: {
+                    paragraphStyles: [
+                        { id: "Heading1", name: "Heading 1", run: { size: 32, bold: true, color: "2E5090" } },
+                        { id: "Heading2", name: "Heading 2", run: { size: 28, bold: true, color: "2E5090" } }
+                    ]
+                }
+            });
+
+            const blob = await Packer.toBlob(doc);
+            saveAs(blob, `${(userName || userInfo?.name || "User").replace(/\s+/g, "_")}_Report_${mName}_${year}.docx`);
+        } catch (e) {
+            console.error(e);
+        }
+    };
+
+    const handleDownload = () => {
+        exportToExcel();
     };
 
     return (
@@ -98,12 +399,20 @@ export default function AppraisalsView({ userId, userName }: AppraisalsViewProps
                     </select>
 
                     <button
-                        onClick={handleDownload}
-                        disabled={!appraisals.length}
-                        className="h-10 flex items-center gap-2 px-4 rounded-xl bg-orange-600 text-white text-xs font-black uppercase tracking-wide hover:bg-orange-700 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-md shadow-orange-600/20"
+                        onClick={exportToExcel}
+                        disabled={!appraisals.length || isExporting}
+                        className="h-10 flex items-center gap-2 px-4 rounded-xl bg-green-600 text-white text-[10px] font-black uppercase tracking-wide hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-md shadow-green-600/20"
                     >
-                        <Download className="h-4 w-4" />
-                        <span className="hidden sm:inline">Export XLSX</span>
+                        {isExporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+                        <span className="hidden sm:inline">Excel</span>
+                    </button>
+                    <button
+                        onClick={exportToWord}
+                        disabled={!appraisals.length || isExporting}
+                        className="h-10 flex items-center gap-2 px-4 rounded-xl bg-blue-600 text-white text-[10px] font-black uppercase tracking-wide hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-md shadow-blue-600/20"
+                    >
+                        <FileText className="h-4 w-4" />
+                        <span className="hidden sm:inline">Word</span>
                     </button>
                 </div>
             </div>

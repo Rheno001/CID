@@ -3,15 +3,13 @@
 import { use, useState, useEffect, useCallback } from 'react';
 import { Staff, AttendanceRecord } from '@/app/types';
 import { staffApi, attendanceApi } from '@/lib/api';
-import { 
-    Loader2, 
-    Mail, 
-    Phone, 
-    ChevronLeft, 
-    Plus, 
-    TrendingUp, 
-    LogIn, 
-    LogOut,
+import {
+    Loader2,
+    Mail,
+    Phone,
+    ChevronLeft,
+    Plus,
+    TrendingUp,
     ShieldAlert,
     ExternalLink,
     Building2,
@@ -70,9 +68,9 @@ export default function StaffViewPage({ params }: { params: Promise<{ id: string
         if (!staff) return;
 
         if (action === 'in' && staff.role?.toUpperCase() === 'CEO') {
-            setStatusMessage({ 
-                type: 'info', 
-                text: 'Backend Limitation: The CEO is exempted from the attendance system and cannot be clocked in.' 
+            setStatusMessage({
+                type: 'info',
+                text: 'Backend Limitation: The CEO is exempted from the attendance system and cannot be clocked in.'
             });
             return;
         }
@@ -95,7 +93,7 @@ export default function StaffViewPage({ params }: { params: Promise<{ id: string
 
             const successText = res?.message || (action === 'in' ? 'Successfully clocked in.' : 'Successfully clocked out.');
             setStatusMessage({ type: 'success', text: successText });
-            
+
             await fetchStaffAndAttendance();
         } catch (err: any) {
             console.error('Clock error:', err);
@@ -157,34 +155,16 @@ export default function StaffViewPage({ params }: { params: Promise<{ id: string
                 <div className="flex flex-wrap items-center gap-3">
                     {!isCEO && (
                         <>
-                            <button 
+                            <button
                                 onClick={() => setIsOverrideOpen(true)}
-                                className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-amber-500/5 text-amber-500 hover:bg-amber-500/10 transition-all text-sm font-black uppercase tracking-tight"
+                                className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-amber-500/10 text-amber-500 border border-amber-500/20 hover:bg-amber-500 hover:text-white transition-all text-sm font-black uppercase tracking-tight shadow-lg shadow-amber-900/10"
                             >
                                 <ShieldAlert className="h-4 w-4" />
-                                Override
-                            </button>
-                            
-                            <button 
-                                onClick={() => handleClock('in')}
-                                disabled={clockLoading !== null}
-                                className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-green-600/90 text-white text-sm font-black hover:bg-green-600 active:scale-95 disabled:opacity-50 transition-all"
-                            >
-                                {clockLoading === 'in' ? <Loader2 className="h-4 w-4 animate-spin" /> : <LogIn className="h-4 w-4" />}
-                                Clock In
-                            </button>
-
-                            <button 
-                                onClick={() => handleClock('out')}
-                                disabled={clockLoading !== null}
-                                className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-red-600/90 text-white text-sm font-black hover:bg-red-600 active:scale-95 disabled:opacity-50 transition-all"
-                            >
-                                {clockLoading === 'out' ? <Loader2 className="h-4 w-4 animate-spin" /> : <LogOut className="h-4 w-4" />}
-                                Clock Out
+                                Override Entry
                             </button>
                         </>
                     )}
-                    
+
                     {isCEO && (
                         <div className="px-5 py-3 rounded-2xl bg-zinc-900 border border-zinc-800 text-xs font-black text-primary uppercase tracking-widest">
                             Exempt Account
@@ -197,16 +177,16 @@ export default function StaffViewPage({ params }: { params: Promise<{ id: string
             {statusMessage && (
                 <div className={cn(
                     "p-4 rounded-3xl border flex items-center justify-between bg-zinc-900 border-zinc-800 animate-in zoom-in-95 duration-300",
-                    statusMessage.type === 'success' ? "border-green-500/20" : 
-                    statusMessage.type === 'info' ? "border-primary/20" : "border-red-500/20"
+                    statusMessage.type === 'success' ? "border-green-500/20" :
+                        statusMessage.type === 'info' ? "border-primary/20" : "border-red-500/20"
                 )}>
                     <div className="flex items-center gap-4 px-2">
-                        {statusMessage.type === 'success' ? <CheckCircle2 className="h-5 w-5 text-green-500" /> : 
-                         statusMessage.type === 'info' ? <Info className="h-5 w-5 text-primary" /> : <XCircle className="h-5 w-5 text-red-500" />}
+                        {statusMessage.type === 'success' ? <CheckCircle2 className="h-5 w-5 text-green-500" /> :
+                            statusMessage.type === 'info' ? <Info className="h-5 w-5 text-primary" /> : <XCircle className="h-5 w-5 text-red-500" />}
                         <span className={cn(
                             "text-sm font-bold",
                             statusMessage.type === 'success' ? "text-green-400" :
-                            statusMessage.type === 'info' ? "text-primary" : "text-red-400"
+                                statusMessage.type === 'info' ? "text-primary" : "text-red-400"
                         )}>{statusMessage.text}</span>
                     </div>
                     <button onClick={() => setStatusMessage(null)} className="text-xs font-black text-gray-500 hover:text-white mr-2">DISMISS</button>
@@ -218,16 +198,16 @@ export default function StaffViewPage({ params }: { params: Promise<{ id: string
                 <div className="lg:col-span-4 space-y-6">
                     <div className="bg-zinc-900/40 rounded-4xl border border-zinc-900 overflow-hidden backdrop-blur-md">
                         <div className="h-28 relative">
-                             {/* Removed Gradient in Profile Header */}
-                             <div className="absolute inset-x-0 bottom-0 h-px bg-zinc-800/50" />
+                            {/* Removed Gradient in Profile Header */}
+                            <div className="absolute inset-x-0 bottom-0 h-px bg-zinc-800/50" />
                         </div>
                         <div className="px-8 pb-10 -mt-14 relative text-center">
                             <div className="inline-block p-1.5 bg-zinc-950 rounded-[2.5rem] mb-6 shadow-2xl">
                                 <div className="h-28 w-28 rounded-[2rem] bg-zinc-900 flex items-center justify-center text-primary font-black text-5xl overflow-hidden shadow-inner">
                                     {(staff.profile_pic_url || staff.profile_picture) ? (
-                                        <img 
-                                            src={(staff.profile_pic_url || staff.profile_picture) as string} 
-                                            alt={staff.name || 'Profile'} 
+                                        <img
+                                            src={(staff.profile_pic_url || staff.profile_picture) as string}
+                                            alt={staff.name || 'Profile'}
                                             className="h-full w-full object-cover"
                                         />
                                     ) : (
@@ -237,7 +217,7 @@ export default function StaffViewPage({ params }: { params: Promise<{ id: string
                             </div>
                             <h2 className="text-3xl font-black text-foreground leading-tight">{staff.name}</h2>
                             <p className="text-xs font-black text-gray-500 uppercase tracking-[0.2em] mt-2">{staff.role}</p>
-                            
+
                             <div className="mt-10 space-y-5 text-left bg-zinc-950/30 p-6 rounded-3xl border border-zinc-900/50">
                                 <div className="flex items-center gap-4 group">
                                     <div className="h-10 w-10 rounded-2xl bg-zinc-900 flex items-center justify-center text-gray-600 group-hover:text-primary transition-colors border border-zinc-800">
@@ -270,7 +250,7 @@ export default function StaffViewPage({ params }: { params: Promise<{ id: string
                                 </div>
                             </div>
 
-                            <Link 
+                            <Link
                                 href={`/dashboard/staff/${id}`}
                                 className="w-full mt-8 flex items-center justify-center gap-2 py-4 rounded-3xl bg-zinc-900 text-sm font-black text-gray-400 hover:text-white hover:bg-zinc-800 transition-all border border-zinc-800"
                             >
@@ -293,7 +273,7 @@ export default function StaffViewPage({ params }: { params: Promise<{ id: string
                         </div>
                     </div>
 
-                    <button 
+                    <button
                         onClick={() => setIsAppraisalsOpen(true)}
                         className="w-full flex items-center justify-between p-7 rounded-[2.5rem] bg-zinc-900/50 hover:bg-zinc-900 transition-all border border-zinc-800 group"
                     >
@@ -340,7 +320,7 @@ export default function StaffViewPage({ params }: { params: Promise<{ id: string
                                 </thead>
                                 <tbody className="divide-y divide-zinc-900">
                                     {appraisals.length > 0 ? (
-                                        [...appraisals].sort((a,b) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime()).map((rec, i) => {
+                                        [...appraisals].sort((a, b) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime()).map((rec, i) => {
                                             const isSigned = !!rec.signature_url;
                                             return (
                                                 <tr key={rec.id || i} className="group hover:bg-zinc-950/30 transition-colors">
@@ -357,20 +337,20 @@ export default function StaffViewPage({ params }: { params: Promise<{ id: string
                                                         </div>
                                                     </td>
                                                     <td className="px-10 py-7 max-w-[200px]">
-                                                         <p className="text-sm font-bold text-gray-400 truncate">{rec.achievements}</p>
+                                                        <p className="text-sm font-bold text-gray-400 truncate">{rec.achievements}</p>
                                                     </td>
                                                     <td className="px-10 py-7 text-right">
-                                                         { isSigned ? 
+                                                        {isSigned ?
                                                             <div className="flex items-center justify-end gap-2">
                                                                 <CheckCircle2 className="h-4 w-4 text-green-500" />
                                                                 <span className="text-green-500 text-xs font-bold uppercase tracking-widest">Signed</span>
                                                             </div>
-                                                            : 
+                                                            :
                                                             <div className="flex items-center justify-end gap-2">
                                                                 <XCircle className="h-4 w-4 text-amber-500" />
                                                                 <span className="text-amber-500 text-xs font-bold uppercase tracking-widest">Unvouched</span>
                                                             </div>
-                                                         }
+                                                        }
                                                     </td>
                                                 </tr>
                                             );
@@ -424,7 +404,7 @@ export default function StaffViewPage({ params }: { params: Promise<{ id: string
 
                     <div className="space-y-3">
                         <label className="text-[10px] font-black text-gray-600 uppercase tracking-widest ml-1">Override Justification</label>
-                        <textarea 
+                        <textarea
                             required
                             rows={4}
                             placeholder="State the categorical reason for this manual entry..."
@@ -435,19 +415,19 @@ export default function StaffViewPage({ params }: { params: Promise<{ id: string
                     </div>
 
                     <div className="flex gap-4 pt-2">
-                        <button 
+                        <button
                             onClick={() => { setIsOverrideOpen(false); setOverrideReason(''); }}
                             className="flex-1 py-5 bg-zinc-900 hover:bg-zinc-800 text-gray-500 font-black rounded-3xl transition-all uppercase tracking-widest text-xs"
                         >
                             Abort
                         </button>
-                        <button 
+                        <button
                             onClick={() => handleClock('in')}
                             disabled={!overrideReason.trim() || clockLoading !== null}
                             className="flex-1 py-5 bg-amber-600 hover:bg-amber-500 text-white font-black rounded-3xl shadow-2xl shadow-amber-900/40 disabled:opacity-50 transition-all flex items-center justify-center gap-3 uppercase tracking-widest text-xs"
                         >
-                             {clockLoading === 'in' ? <Loader2 className="h-5 w-5 animate-spin" /> : <ShieldAlert className="h-5 w-5" />}
-                             Confirm Entry
+                            {clockLoading === 'in' ? <Loader2 className="h-5 w-5 animate-spin" /> : <ShieldAlert className="h-5 w-5" />}
+                            Confirm Entry
                         </button>
                     </div>
                 </div>
